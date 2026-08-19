@@ -457,18 +457,44 @@ body {
   font-weight: 600;
 }
 
+ /* Navigation Header */
+.app-header {
+  background: linear-gradient(135deg, #4A0404 0%, #7B1113 100%);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.app-title {
+  font-family: 'Rozha One', 'Tiro Devanagari Hindi', serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  width: 100%;
+}
+
 /* MOBILE RESPONSIVE STYLES */
 @media screen and (max-width: 768px) {
   .app-header {
-    padding: 0.8rem 1rem;
+    padding: 0.6rem 0.5rem;
   }
   
   .app-title {
-    font-size: 1.05rem;
+    font-size: 1rem;
+    gap: 6px;
+    line-height: 1.3;
   }
 
   .main-content {
-    padding: 0.5rem 0.25rem;
+    padding: 0.4rem 0.2rem;
   }
 
   .paper-form-wrapper {
@@ -481,19 +507,25 @@ body {
   }
 
   .paper-border-frame {
-    padding: 6px 4px !important;
+    padding: 6px 6px !important;
     min-height: auto !important;
     border-width: 1px !important;
   }
 
   .form-main-title {
-    font-size: 12.5pt !important;
+    font-size: 12pt !important;
+    line-height: 1.3;
   }
 
   .form-top-section {
     flex-direction: column-reverse;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+  }
+
+  .form-fields-grid {
+    padding-top: 0 !important;
+    width: 100%;
   }
 
   .photo-box-container {
@@ -504,19 +536,31 @@ body {
 
   .form-row-2col {
     grid-template-columns: 1fr !important;
-    gap: 6px !important;
+    gap: 8px !important;
   }
 
   .field-group {
     font-size: 9.5pt;
+    width: 100%;
   }
 
   .field-label {
-    font-size: 9pt;
+    font-size: 9.5pt;
+  }
+
+  .field-input-wrapper {
+    min-height: 26px;
   }
 
   .field-input {
-    font-size: 9.5pt;
+    font-size: 10pt;
+    height: 26px;
+  }
+
+  /* Prevent inline flex children from overflowing on mobile */
+  .paper-form-wrapper div[style*="display: flex"] {
+    flex-wrap: wrap !important;
+    row-gap: 6px;
   }
 
   /* Make Family Table touch scrollable on mobile */
@@ -528,7 +572,7 @@ body {
   }
 
   .family-table {
-    min-width: 620px;
+    min-width: 640px;
   }
 
   .form-actions-bar {
@@ -541,6 +585,8 @@ body {
   .form-actions-bar .btn {
     width: 100%;
     justify-content: center;
+    font-size: 1rem;
+    padding: 10px;
   }
 }
 
