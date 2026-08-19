@@ -457,6 +457,93 @@ body {
   font-weight: 600;
 }
 
+/* MOBILE RESPONSIVE STYLES */
+@media screen and (max-width: 768px) {
+  .app-header {
+    padding: 0.8rem 1rem;
+  }
+  
+  .app-title {
+    font-size: 1.05rem;
+  }
+
+  .main-content {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .paper-form-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    padding: 8px 6px !important;
+    box-shadow: none !important;
+    border-width: 1.5px !important;
+  }
+
+  .paper-border-frame {
+    padding: 6px 4px !important;
+    min-height: auto !important;
+    border-width: 1px !important;
+  }
+
+  .form-main-title {
+    font-size: 12.5pt !important;
+  }
+
+  .form-top-section {
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .photo-box-container {
+    width: 32mm !important;
+    height: 40mm !important;
+    margin: 0 auto 4px auto;
+  }
+
+  .form-row-2col {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+
+  .field-group {
+    font-size: 9.5pt;
+  }
+
+  .field-label {
+    font-size: 9pt;
+  }
+
+  .field-input {
+    font-size: 9.5pt;
+  }
+
+  /* Make Family Table touch scrollable on mobile */
+  .family-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 6px;
+  }
+
+  .family-table {
+    min-width: 620px;
+  }
+
+  .form-actions-bar {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .form-actions-bar .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* PRINT SPECIFIC RULES */
 @media print {
   @page {

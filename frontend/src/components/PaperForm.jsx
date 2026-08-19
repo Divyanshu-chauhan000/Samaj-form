@@ -559,89 +559,91 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
             परिवार के सदस्यों का विवरण
           </div>
 
-          <table className="family-table">
-            <thead>
-              <tr>
-                <th style={{ width: '6%' }}>क्र.सं.</th>
-                <th style={{ width: '22%' }}>नाम</th>
-                <th style={{ width: '8%' }}>आयु</th>
-                <th style={{ width: '15%' }}>मुखिया से सम्बन्ध</th>
-                <th style={{ width: '13%' }}>शिक्षा</th>
-                <th style={{ width: '13%' }}>व्यवसाय</th>
-                <th style={{ width: '11%' }}>विवाहित/अविवाहित</th>
-                <th style={{ width: '12%' }}>मोबाइल नंबर</th>
-                <th className="no-print" style={{ width: '4%' }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {formData.members.map((member, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={member.name}
-                      onChange={e => handleMemberChange(index, 'name', e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={member.age}
-                      onChange={e => handleMemberChange(index, 'age', e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={member.relation}
-                      onChange={e => handleMemberChange(index, 'relation', e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={member.education}
-                      onChange={e => handleMemberChange(index, 'education', e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={member.occupation}
-                      onChange={e => handleMemberChange(index, 'occupation', e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={member.maritalStatus}
-                      onChange={e => handleMemberChange(index, 'maritalStatus', e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={member.mobile}
-                      onChange={e => handleMemberChange(index, 'mobile', e.target.value)}
-                    />
-                  </td>
-                  <td className="no-print">
-                    {formData.members.length > 7 && (
-                      <button 
-                        type="button" 
-                        style={{ border: 'none', background: 'transparent', color: 'red', cursor: 'pointer' }}
-                        onClick={() => handleRemoveMember(index)}
-                        title="सदस्य हटाएं"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </td>
+          <div className="family-table-wrapper">
+            <table className="family-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '6%' }}>क्र.सं.</th>
+                  <th style={{ width: '22%' }}>नाम</th>
+                  <th style={{ width: '8%' }}>आयु</th>
+                  <th style={{ width: '15%' }}>मुखिया से सम्बन्ध</th>
+                  <th style={{ width: '13%' }}>शिक्षा</th>
+                  <th style={{ width: '13%' }}>व्यवसाय</th>
+                  <th style={{ width: '11%' }}>विवाहित/अविवाहित</th>
+                  <th style={{ width: '12%' }}>मोबाइल नंबर</th>
+                  <th className="no-print" style={{ width: '4%' }}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {formData.members.map((member, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>
+                      <input 
+                        type="text" 
+                        value={member.name}
+                        onChange={e => handleMemberChange(index, 'name', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="text" 
+                        value={member.age}
+                        onChange={e => handleMemberChange(index, 'age', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="text" 
+                        value={member.relation}
+                        onChange={e => handleMemberChange(index, 'relation', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="text" 
+                        value={member.education}
+                        onChange={e => handleMemberChange(index, 'education', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="text" 
+                        value={member.occupation}
+                        onChange={e => handleMemberChange(index, 'occupation', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="text" 
+                        value={member.maritalStatus}
+                        onChange={e => handleMemberChange(index, 'maritalStatus', e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input 
+                        type="text" 
+                        value={member.mobile}
+                        onChange={e => handleMemberChange(index, 'mobile', e.target.value)}
+                      />
+                    </td>
+                    <td className="no-print">
+                      {formData.members.length > 7 && (
+                        <button 
+                          type="button" 
+                          style={{ border: 'none', background: 'transparent', color: 'red', cursor: 'pointer' }}
+                          onClick={() => handleRemoveMember(index)}
+                          title="सदस्य हटाएं"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Add Dynamic Member Button */}
           <div className="add-member-btn-row no-print">
