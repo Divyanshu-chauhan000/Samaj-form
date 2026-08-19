@@ -285,9 +285,9 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
 
               {/* Row 2: Age, Education & Mobile */}
               <div className="form-row-2col">
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flex: 1 }}>
-                  <span className="field-label" style={{ whiteSpace: 'nowrap' }}>आयु -</span>
-                  <div className="field-input-wrapper" style={{ minWidth: '40px', flex: '0.5' }}>
+                <div className="form-inline-group">
+                  <span className="field-label label-nowrap">आयु -</span>
+                  <div className="field-input-wrapper input-sm">
                     <input 
                       type="text" 
                       className="field-input"
@@ -295,8 +295,8 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
                       onChange={e => handleInputChange('headAge', e.target.value)}
                     />
                   </div>
-                  <span className="field-label" style={{ whiteSpace: 'nowrap' }}>वर्ष, शिक्षा -</span>
-                  <div className="field-input-wrapper" style={{ minWidth: '80px', flex: '1.5' }}>
+                  <span className="field-label label-nowrap">वर्ष, शिक्षा -</span>
+                  <div className="field-input-wrapper input-md">
                     <input 
                       type="text" 
                       className="field-input"
@@ -399,9 +399,9 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
           </div>
 
           {/* Full Width Section: Rows 5 to 10 (Below Photo Box) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%', marginTop: '6px' }}>
+          <div className="full-width-section">
 
-            {/* Row 5: Wife Details (Single Line across Full Width) */}
+            {/* Row 5: Wife Details (Single Line across Full Width on Print) */}
             <div className="form-row-2col">
               <div className="field-group">
                 <span className="field-label">मुखिया की पत्नी का नाम -</span>
@@ -414,9 +414,9 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
                   />
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                <span className="field-label" style={{ whiteSpace: 'nowrap' }}>गौत्र -</span>
-                <div className="field-input-wrapper" style={{ minWidth: '40px', flex: '1' }}>
+              <div className="form-inline-group">
+                <span className="field-label label-nowrap">गौत्र -</span>
+                <div className="field-input-wrapper input-sm">
                   <input 
                     type="text" 
                     className="field-input"
@@ -424,8 +424,8 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
                     onChange={e => handleInputChange('wifeVillage', e.target.value)}
                   />
                 </div>
-                <span className="field-label" style={{ whiteSpace: 'nowrap' }}>आयु -</span>
-                <div className="field-input-wrapper" style={{ minWidth: '30px', flex: '0.5' }}>
+                <span className="field-label label-nowrap">आयु -</span>
+                <div className="field-input-wrapper input-xs">
                   <input 
                     type="text" 
                     className="field-input"
@@ -433,8 +433,8 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
                     onChange={e => handleInputChange('wifeAge', e.target.value)}
                   />
                 </div>
-                <span className="field-label" style={{ whiteSpace: 'nowrap' }}>वर्ष, शिक्षा -</span>
-                <div className="field-input-wrapper" style={{ minWidth: '40px', flex: '1' }}>
+                <span className="field-label label-nowrap">वर्ष, शिक्षा -</span>
+                <div className="field-input-wrapper input-sm">
                   <input 
                     type="text" 
                     className="field-input"
@@ -523,12 +523,12 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
               </div>
             </div>
 
-            {/* Row 10: Occupation 1 & 2 (Perfectly Aligned 1 & 2) */}
-            <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-start', width: '100%' }}>
-              <span className="field-label" style={{ whiteSpace: 'nowrap', paddingTop: '3px' }}>व्यवसाय –</span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', width: '100%' }}>
-                  <span className="field-label" style={{ minWidth: '18px', whiteSpace: 'nowrap' }}>1-</span>
+            {/* Row 10: Occupation 1 & 2 */}
+            <div className="occupation-wrapper">
+              <span className="field-label label-nowrap" style={{ paddingTop: '3px' }}>व्यवसाय –</span>
+              <div className="occupation-inputs-col">
+                <div className="occupation-line">
+                  <span className="field-label label-nowrap">1-</span>
                   <div className="field-input-wrapper">
                     <input 
                       type="text" 
@@ -538,8 +538,8 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
                     />
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', width: '100%' }}>
-                  <span className="field-label" style={{ minWidth: '18px', whiteSpace: 'nowrap' }}>2-</span>
+                <div className="occupation-line">
+                  <span className="field-label label-nowrap">2-</span>
                   <div className="field-input-wrapper">
                     <input 
                       type="text" 
