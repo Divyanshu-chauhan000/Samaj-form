@@ -307,6 +307,13 @@ body {
   text-align: center;
 }
 
+.family-table th.no-print-action,
+.family-table td.no-print-action {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 2px !important;
+}
+
 .family-table th {
   background-color: #eae1d2;
   color: #3a0000;

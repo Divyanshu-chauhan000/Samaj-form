@@ -571,7 +571,7 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
                   <th style={{ width: '13%' }}>व्यवसाय</th>
                   <th style={{ width: '11%' }}>विवाहित/अविवाहित</th>
                   <th style={{ width: '12%' }}>मोबाइल नंबर</th>
-                  <th className="no-print" style={{ width: '4%' }}></th>
+                  {formData.members.length > 7 && <th className="no-print no-print-action" style={{ width: '4%' }}></th>}
                 </tr>
               </thead>
               <tbody>
@@ -627,8 +627,8 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
                         onChange={e => handleMemberChange(index, 'mobile', e.target.value)}
                       />
                     </td>
-                    <td className="no-print">
-                      {formData.members.length > 7 && (
+                    {formData.members.length > 7 && (
+                      <td className="no-print no-print-action">
                         <button 
                           type="button" 
                           style={{ border: 'none', background: 'transparent', color: 'red', cursor: 'pointer' }}
@@ -637,8 +637,8 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
                         >
                           <Trash2 size={14} />
                         </button>
-                      )}
-                    </td>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
