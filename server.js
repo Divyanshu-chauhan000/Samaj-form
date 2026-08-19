@@ -325,8 +325,8 @@ app.delete('/api/records/:id', (req, res) => {
   res.json({ success: true, message: 'रिकॉर्ड सफलतापूर्वक हटा दिया गया' });
 });
 
-// Catch-all route to serve SPA frontend for any unknown path
-app.get('*', (req, res) => {
+// Catch-all route to serve SPA frontend for any unknown path (Express 5 syntax)
+app.get('{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
 });
 
