@@ -257,7 +257,7 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
               {/* Row 1: Head Name & Gautra */}
               <div className="form-row-2col">
                 <div className="field-group">
-                  <span className="field-label">मुखिया का नाम -</span>
+                  <span className="field-label">मुखिया का नाम श्री -</span>
                   <div className="field-input-wrapper">
                     <input 
                       type="text" 
@@ -287,7 +287,7 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
               <div className="form-row-2col">
                 <div className="form-inline-group">
                   <span className="field-label label-nowrap">आयु -</span>
-                  <div className="field-input-wrapper input-sm">
+                  <div className="field-input-wrapper input-xs">
                     <input 
                       type="text" 
                       className="field-input"
@@ -324,7 +324,7 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
               {/* Row 3: Father Name & Gautra */}
               <div className="form-row-2col">
                 <div className="field-group">
-                  <span className="field-label">पिता का नाम -</span>
+                  <span className="field-label">पिता का नाम श्री -</span>
                   <div className="field-input-wrapper">
                     <input 
                       type="text" 
@@ -350,7 +350,7 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
               {/* Row 4: Mother Name & Gautra */}
               <div className="form-row-2col">
                 <div className="field-group">
-                  <span className="field-label">माता का नाम -</span>
+                  <span className="field-label">माता का नाम श्रीमती -</span>
                   <div className="field-input-wrapper">
                     <input 
                       type="text" 
@@ -401,10 +401,10 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
           {/* Full Width Section: Rows 5 to 10 (Below Photo Box) */}
           <div className="full-width-section">
 
-            {/* Row 5: Wife Details (Single Line across Full Width on Print) */}
+            {/* Row 5: Wife Details */}
             <div className="form-row-2col">
               <div className="field-group">
-                <span className="field-label">मुखिया की पत्नी का नाम -</span>
+                <span className="field-label">मुखिया की पत्नी का नाम श्रीमती -</span>
                 <div className="field-input-wrapper">
                   <input 
                     type="text" 
@@ -448,7 +448,7 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
             {/* Row 6: Father-in-law Name & Gautra */}
             <div className="form-row-2col">
               <div className="field-group">
-                <span className="field-label">मुखिया के ससुर जी का नाम -</span>
+                <span className="field-label">मुखिया के ससुर जी का नाम श्री -</span>
                 <div className="field-input-wrapper">
                   <input 
                     type="text" 
@@ -474,7 +474,7 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
             {/* Row 7: Mother-in-law Name & Gautra */}
             <div className="form-row-2col">
               <div className="field-group">
-                <span className="field-label">मुखिया के सासू जी का नाम -</span>
+                <span className="field-label">मुखिया के सासू जी का नाम श्रीमती -</span>
                 <div className="field-input-wrapper">
                   <input 
                     type="text" 

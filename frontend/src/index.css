@@ -500,6 +500,23 @@ body {
   white-space: nowrap;
 }
 
+.input-xs {
+  max-width: 30px !important;
+  min-width: 24px !important;
+  width: 30px !important;
+  flex: 0 0 30px !important;
+}
+
+.input-sm {
+  max-width: 90px !important;
+  min-width: 50px !important;
+}
+
+.input-md {
+  max-width: 130px !important;
+  min-width: 70px !important;
+}
+
 .occupation-wrapper {
   display: flex;
   gap: 6px;
