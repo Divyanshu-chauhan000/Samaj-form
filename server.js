@@ -240,8 +240,8 @@ app.post('/api/submit', async (req, res) => {
           formData.permanentAddress || '',
           formData.occupation1 || '',
           formData.occupation2 || '',
-          formData.photoUrl || '',
-          formData.signatureUrl || '',
+          formData.photoUrl ? `=HYPERLINK("${formData.photoUrl}", "फोटो देखें")` : '',
+          formData.signatureUrl ? `=HYPERLINK("${formData.signatureUrl}", "हस्ताक्षर देखें")` : '',
           formData.otherDetails || ''
         ];
 
