@@ -29,15 +29,40 @@ app.use('/uploads', express.static(uploadsDir));
 // Static route for built frontend
 app.use(express.static(path.join(__dirname, 'frontend', 'dist')));
 
-// Storage configuration for Multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    const uniqueName = `photo_${Date.now()}_${Math.round(Math.random() * 1E6)}${ext}`;
-    cb(null, uniqueName);
-  }
-});
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// Configure Cloudinary
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_CLOUD_NAME !== 'your_cloud_name_here') {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+}
+
+// Storage configuration for Multer (Cloudinary with local fallback if env not configured)
+let storage;
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_CLOUD_NAME !== 'your_cloud_name_here') {
+  storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'samaj_parichay_uploads',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    },
+  });
+  console.log('[Upload Storage]: Configured to use Cloudinary cloud storage.');
+} else {
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname) || '.jpg';
+      const uniqueName = `photo_${Date.now()}_${Math.round(Math.random() * 1E6)}${ext}`;
+      cb(null, uniqueName);
+    }
+  });
+  console.warn('[Upload Storage Warning]: Cloudinary keys not found in .env! Falling back to local uploads folder.');
+}
 const upload = multer({ storage });
 
 // Local JSON Database Helper for robust persistence & quick read/edits
@@ -174,10 +199,12 @@ app.post('/api/upload', upload.single('photo'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No image uploaded' });
   }
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-  const host = req.get('host');
-  const photoUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
-  res.json({ success: true, photoUrl, filename: req.file.filename });
+  // If uploaded via Cloudinary, req.file.path contains full secure HTTPS URL
+  const photoUrl = req.file.path && req.file.path.startsWith('http')
+    ? req.file.path
+    : `${req.headers['x-forwarded-proto'] || req.protocol || 'http'}://${req.get('host')}/uploads/${req.file.filename}`;
+
+  res.json({ success: true, photoUrl, filename: req.file.filename || req.file.originalname });
 });
 
 // Save / Submit Form
