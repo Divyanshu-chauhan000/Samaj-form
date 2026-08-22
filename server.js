@@ -84,15 +84,33 @@ const saveLocalDb = (data) => {
 };
 
 const generateNextRegistrationId = () => {
-  let counter = 1;
+  const db = getLocalDb();
+  let maxNum = 0;
+
+  // Scan local DB for the highest existing registration number
+  db.forEach(r => {
+    if (r.registrationId && r.registrationId.startsWith('KSP-2026-')) {
+      const parts = r.registrationId.split('-');
+      const num = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+      }
+    }
+  });
+
+  // Also sync with counter.json file
   if (fs.existsSync(COUNTER_PATH)) {
     try {
       const cntData = JSON.parse(fs.readFileSync(COUNTER_PATH, 'utf-8'));
-      counter = (cntData.counter || 0) + 1;
+      if (cntData.counter && cntData.counter > maxNum) {
+        maxNum = cntData.counter;
+      }
     } catch (e) {}
   }
-  fs.writeFileSync(COUNTER_PATH, JSON.stringify({ counter }), 'utf-8');
-  const padded = String(counter).padStart(5, '0');
+
+  const nextCounter = maxNum + 1;
+  fs.writeFileSync(COUNTER_PATH, JSON.stringify({ counter: nextCounter }), 'utf-8');
+  const padded = String(nextCounter).padStart(5, '0');
   return `KSP-2026-${padded}`;
 };
 
@@ -211,7 +229,16 @@ app.post('/api/upload', upload.single('photo'), (req, res) => {
 app.post('/api/submit', async (req, res) => {
   try {
     const formData = req.body;
-    const registrationId = formData.registrationId || generateNextRegistrationId();
+    const db = getLocalDb();
+    
+    let registrationId = formData.registrationId;
+    const existingIndex = registrationId ? db.findIndex(r => r.registrationId === registrationId) : -1;
+
+    // Generate NEW Registration ID if it's not explicitly an edit or if the registrationId is missing/invalid
+    if (!formData.isEdit || existingIndex < 0 || !registrationId) {
+      registrationId = generateNextRegistrationId();
+    }
+
     const submissionDate = new Date().toLocaleString('hi-IN', { timeZone: 'Asia/Kolkata' });
 
     const newRecord = {
@@ -221,10 +248,8 @@ app.post('/api/submit', async (req, res) => {
       updatedAt: new Date().toISOString()
     };
 
-    // Save to Local DB first
-    const db = getLocalDb();
-    const existingIndex = db.findIndex(r => r.registrationId === registrationId);
-    if (existingIndex >= 0) {
+    // Save to Local DB
+    if (existingIndex >= 0 && formData.isEdit) {
       db[existingIndex] = newRecord;
     } else {
       db.unshift(newRecord);
@@ -272,13 +297,35 @@ app.post('/api/submit', async (req, res) => {
           formData.otherDetails || ''
         ];
 
-        // Append Family
-        await sheets.spreadsheets.values.append({
-          spreadsheetId,
-          range: 'Families!A2',
-          valueInputOption: 'USER_ENTERED',
-          requestBody: { values: [familyRow] }
-        });
+        // Check if family record already exists in Google Sheets
+        let existingRowIndex = -1;
+        try {
+          const res = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range: 'Families!A2:A'
+          });
+          const rows = res.data.values || [];
+          existingRowIndex = rows.findIndex(row => row[0] === registrationId);
+        } catch (e) {}
+
+        if (existingRowIndex >= 0) {
+          // Update existing row (Header is row 1, A2 is index 0 -> row = index + 2)
+          const sheetRowNumber = existingRowIndex + 2;
+          await sheets.spreadsheets.values.update({
+            spreadsheetId,
+            range: `Families!A${sheetRowNumber}`,
+            valueInputOption: 'USER_ENTERED',
+            requestBody: { values: [familyRow] }
+          });
+        } else {
+          // Append new Family row
+          await sheets.spreadsheets.values.append({
+            spreadsheetId,
+            range: 'Families!A2',
+            valueInputOption: 'USER_ENTERED',
+            requestBody: { values: [familyRow] }
+          });
+        }
 
         // Prepare Family Members rows
         if (formData.members && formData.members.length > 0) {
@@ -314,7 +361,7 @@ app.post('/api/submit', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'फॉर्म सफलतापूर्वक सहेजा गया!',
+      message: formData.isEdit ? 'फॉर्म सफलतापूर्वक अपडेट हो गया!' : 'फॉर्म सफलतापूर्वक सहेजा गया!',
       registrationId,
       record: newRecord,
       googleSheetSaved,
@@ -333,12 +380,27 @@ app.get('/api/records', (req, res) => {
   res.json({ success: true, records: db });
 });
 
-// Get Single Record by Registration ID
+// Get Single Record by Registration ID (or Numeric Part)
 app.get('/api/records/:id', (req, res) => {
   const db = getLocalDb();
-  const record = db.find(r => r.registrationId === req.params.id);
+  const searchId = req.params.id.trim().toUpperCase();
+  
+  const record = db.find(r => {
+    if (!r.registrationId) return false;
+    const regUpper = r.registrationId.toUpperCase();
+    if (regUpper === searchId) return true;
+    
+    // Check numeric match e.g. "10" or "00010" matching "KSP-2026-00010"
+    const digitsOnly = searchId.replace(/\D/g, '');
+    if (digitsOnly) {
+      const paddedSearch = `KSP-2026-${digitsOnly.padStart(5, '0')}`;
+      if (regUpper === paddedSearch) return true;
+    }
+    return false;
+  });
+
   if (!record) {
-    return res.status(404).json({ success: false, message: 'रिकॉर्ड नहीं मिला' });
+    return res.status(404).json({ success: false, message: `रजिस्ट्रेशन क्रमांक '${req.params.id}' नहीं मिला` });
   }
   res.json({ success: true, record });
 });

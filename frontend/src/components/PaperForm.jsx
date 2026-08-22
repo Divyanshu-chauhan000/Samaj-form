@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Plus, Trash2, Save, Printer, ArrowLeft, CheckCircle, FileText } from 'lucide-react';
+import { Upload, Plus, Trash2, Save, Printer, ArrowLeft, CheckCircle, FileText, Search } from 'lucide-react';
 
 const INITIAL_MEMBERS = Array.from({ length: 7 }, (_, i) => ({
   id: i + 1,
@@ -15,33 +15,132 @@ const INITIAL_MEMBERS = Array.from({ length: 7 }, (_, i) => ({
 export default function PaperForm({ initialData = null, onSaved = null, onCancel = null }) {
   const fileInputRef = useRef(null);
   const sigInputRef = useRef(null);
+
+  const [searchRegId, setSearchRegId] = useState('');
+  const [searching, setSearching] = useState(false);
   
-  const [formData, setFormData] = useState(initialData || {
-    registrationId: '',
-    headName: '',
-    headAge: '',
-    headEducation: '',
-    fatherName: '',
-    motherName: '',
-    wifeName: '',
-    wifeAge: '',
-    wifeEducation: '',
-    wifeVillage: '',
-    fatherInLawName: '',
-    fatherInLawVillage: '',
-    motherInLawName: '',
-    motherInLawVillage: '',
-    headVillage: '',
-    mobileNumber: '',
-    currentAddress: '',
-    permanentAddress: '',
-    occupation1: '',
-    occupation2: '',
-    photoUrl: '',
-    signatureUrl: '',
-    otherDetails: '',
-    members: INITIAL_MEMBERS
+  const getInitialState = (data) => ({
+    registrationId: data?.registrationId || '',
+    isEdit: !!(data && data.registrationId),
+    headName: data?.headName || '',
+    headAge: data?.headAge || '',
+    headEducation: data?.headEducation || '',
+    fatherName: data?.fatherName || '',
+    motherName: data?.motherName || '',
+    wifeName: data?.wifeName || '',
+    wifeAge: data?.wifeAge || '',
+    wifeEducation: data?.wifeEducation || '',
+    wifeVillage: data?.wifeVillage || '',
+    fatherInLawName: data?.fatherInLawName || '',
+    fatherInLawVillage: data?.fatherInLawVillage || '',
+    motherInLawName: data?.motherInLawName || '',
+    motherInLawVillage: data?.motherInLawVillage || '',
+    headVillage: data?.headVillage || '',
+    mobileNumber: data?.mobileNumber || '',
+    currentAddress: data?.currentAddress || '',
+    permanentAddress: data?.permanentAddress || '',
+    occupation1: data?.occupation1 || '',
+    occupation2: data?.occupation2 || '',
+    photoUrl: data?.photoUrl || '',
+    signatureUrl: data?.signatureUrl || '',
+    otherDetails: data?.otherDetails || '',
+    members: data?.members || INITIAL_MEMBERS
   });
+
+  const [formData, setFormData] = useState(() => getInitialState(initialData));
+
+  const handleResetNewForm = () => {
+    setFormData({
+      registrationId: '',
+      isEdit: false,
+      headName: '',
+      headAge: '',
+      headEducation: '',
+      fatherName: '',
+      motherName: '',
+      wifeName: '',
+      wifeAge: '',
+      wifeEducation: '',
+      wifeVillage: '',
+      fatherInLawName: '',
+      fatherInLawVillage: '',
+      motherInLawName: '',
+      motherInLawVillage: '',
+      headVillage: '',
+      mobileNumber: '',
+      currentAddress: '',
+      permanentAddress: '',
+      occupation1: '',
+      occupation2: '',
+      photoUrl: '',
+      signatureUrl: '',
+      otherDetails: '',
+      members: Array.from({ length: 7 }, (_, i) => ({
+        id: i + 1,
+        name: '',
+        age: '',
+        relation: '',
+        education: '',
+        occupation: '',
+        maritalStatus: '',
+        mobile: ''
+      }))
+    });
+    setSuccessInfo(null);
+    setErrors({});
+    setSearchRegId('');
+  };
+
+  const handleSearchAndLoadRecord = async () => {
+    if (!searchRegId.trim()) {
+      alert('कृपया Registration ID दर्ज करें। (उदा: KSP-2026-00010 या 10)');
+      return;
+    }
+    setSearching(true);
+    try {
+      const res = await fetch(`/api/records/${encodeURIComponent(searchRegId.trim())}`);
+      const data = await res.json();
+      if (data.success && data.record) {
+        const rec = data.record;
+        setFormData({
+          registrationId: rec.registrationId,
+          isEdit: true,
+          headName: rec.headName || '',
+          headAge: rec.headAge || '',
+          headEducation: rec.headEducation || '',
+          fatherName: rec.fatherName || '',
+          motherName: rec.motherName || '',
+          wifeName: rec.wifeName || '',
+          wifeAge: rec.wifeAge || '',
+          wifeEducation: rec.wifeEducation || '',
+          wifeVillage: rec.wifeVillage || '',
+          fatherInLawName: rec.fatherInLawName || '',
+          fatherInLawVillage: rec.fatherInLawVillage || '',
+          motherInLawName: rec.motherInLawName || '',
+          motherInLawVillage: rec.motherInLawVillage || '',
+          headVillage: rec.headVillage || '',
+          mobileNumber: rec.mobileNumber || '',
+          currentAddress: rec.currentAddress || '',
+          permanentAddress: rec.permanentAddress || '',
+          occupation1: rec.occupation1 || '',
+          occupation2: rec.occupation2 || '',
+          photoUrl: rec.photoUrl || '',
+          signatureUrl: rec.signatureUrl || '',
+          otherDetails: rec.otherDetails || '',
+          members: rec.members && rec.members.length > 0 ? rec.members : INITIAL_MEMBERS
+        });
+        setSuccessInfo(null);
+        alert(`✓ पंजीयन क्रमांक ${rec.registrationId} का विवरण सफलतापूर्वक लोड हो गया है। आप बदलाव करके फॉर्म सबमिट कर सकते हैं।`);
+      } else {
+        alert(data.message || 'कोई रिकॉर्ड नहीं मिला');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('फॉर्म विवरण लोड करने में विफलता');
+    } finally {
+      setSearching(false);
+    }
+  };
 
   const [uploading, setUploading] = useState(false);
   const [sigUploading, setSigUploading] = useState(false);
@@ -176,7 +275,7 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
 
       if (result.success) {
         setSuccessInfo(result);
-        setFormData(prev => ({ ...prev, registrationId: result.registrationId }));
+        setFormData(prev => ({ ...prev, registrationId: result.registrationId, isEdit: true }));
         if (onSaved) onSaved(result.record);
       } else {
         alert(result.message || 'रिकॉर्ड सेव नहीं हो पाया। कृपया दोबारा प्रयास करें।');
@@ -225,16 +324,66 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
             </p>
           )}
 
-          <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
+          <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
             <button className="btn btn-primary" onClick={handlePrint}>
               <Printer size={16} /> फॉर्म प्रिंट / PDF डाउनलोड करें
             </button>
             <button className="btn btn-secondary" style={{ color: '#333' }} onClick={() => setSuccessInfo(null)}>
-              फॉर्म में सुधार करें
+              इसी फॉर्म में सुधार करें
+            </button>
+            <button className="btn btn-success" onClick={handleResetNewForm}>
+              <Plus size={16} /> नया फॉर्म भरें (New Registration)
             </button>
           </div>
         </div>
       )}
+
+      {/* Search & Edit Existing Form Bar */}
+      <div className="no-print" style={{
+        maxWidth: '210mm',
+        margin: '0 auto 20px auto',
+        background: '#fff8e1',
+        border: '1px solid #ffe082',
+        borderRadius: '8px',
+        padding: '12px 18px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '12px',
+        flexWrap: 'wrap',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#795548', fontWeight: 'bold', fontSize: '0.95rem' }}>
+          <Search size={18} style={{ color: '#d84315' }} />
+          <span>पुराना फॉर्म एडिट करें:</span>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', flex: 1, minWidth: '260px' }}>
+          <input 
+            type="text" 
+            placeholder="Registration ID दर्ज करें (उदा: KSP-2026-00010 या 10)" 
+            value={searchRegId}
+            onChange={e => setSearchRegId(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSearchAndLoadRecord()}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              border: '1px solid #ccc',
+              borderRadius: '6px',
+              fontSize: '0.9rem',
+              outline: 'none'
+            }}
+          />
+          <button 
+            type="button" 
+            className="btn btn-primary"
+            style={{ padding: '8px 16px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={handleSearchAndLoadRecord}
+            disabled={searching}
+          >
+            <Search size={15} /> {searching ? 'खोज रहे हैं...' : 'विवरण लोड करें'}
+          </button>
+        </div>
+      </div>
 
       {/* Main Printable Paper Form Frame */}
       <div className="paper-form-wrapper">
@@ -731,6 +880,14 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
           disabled={saving}
         >
           <Save size={18} /> {saving ? 'सहेजा जा रहा है...' : 'फॉर्म सबमिट करें (Save)'}
+        </button>
+        <button 
+          type="button" 
+          className="btn btn-secondary"
+          style={{ color: '#555' }}
+          onClick={handleResetNewForm}
+        >
+          <Plus size={16} /> रिसेट / नया फॉर्म
         </button>
         <button 
           type="button" 
