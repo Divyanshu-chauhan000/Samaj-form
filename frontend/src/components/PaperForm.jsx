@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Plus, Trash2, Save, Printer, ArrowLeft, CheckCircle, FileText, Search } from 'lucide-react';
+import { Upload, Plus, Trash2, Save, Printer, ArrowLeft, CheckCircle, FileText, Search, Camera, X } from 'lucide-react';
 
 const INITIAL_MEMBERS = Array.from({ length: 7 }, (_, i) => ({
   id: i + 1,
@@ -15,9 +15,13 @@ const INITIAL_MEMBERS = Array.from({ length: 7 }, (_, i) => ({
 export default function PaperForm({ initialData = null, onSaved = null, onCancel = null }) {
   const fileInputRef = useRef(null);
   const sigInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const videoRef = useRef(null);
 
   const [searchRegId, setSearchRegId] = useState('');
   const [searching, setSearching] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
   
   const getInitialState = (data) => ({
     registrationId: data?.registrationId || '',
@@ -213,6 +217,71 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
     } finally {
       setUploading(false);
     }
+  };
+
+  // Camera capture handlers
+  const startCamera = async () => {
+    setShowCameraModal(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } }
+      });
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.warn('Live webcam access error, opening fallback mobile camera input:', err);
+      setShowCameraModal(false);
+      if (cameraInputRef.current) {
+        cameraInputRef.current.click();
+      }
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    setShowCameraModal(false);
+  };
+
+  const capturePhotoFromCamera = async () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 640;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const file = new File([blob], `camera_photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      stopCamera();
+      
+      const data = new FormData();
+      data.append('photo', file);
+      setUploading(true);
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: data
+        });
+        const result = await res.json();
+        if (result.success) {
+          setFormData(prev => ({ ...prev, photoUrl: result.photoUrl }));
+        } else {
+          alert('फोटो अपलोड करने में विफलता: ' + result.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('फोटो अपलोड नहीं हो सका।');
+      } finally {
+        setUploading(false);
+      }
+    }, 'image/jpeg', 0.9);
   };
 
   // Signature Upload Handler
@@ -525,23 +594,56 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
             </div>
 
             {/* Upper Right Head Photo Box */}
-            <div className="photo-box-container" onClick={() => fileInputRef.current?.click()}>
-              {formData.photoUrl ? (
-                <img src={formData.photoUrl} alt="मुखिया फोटो" className="photo-preview-img" />
-              ) : (
-                <div className="photo-box-label">
-                  <Upload size={22} style={{ margin: '0 auto 6px auto', color: '#7B1113' }} />
-                  <div>मुखिया की फोटो</div>
-                  <div style={{ fontSize: '7.5pt', color: '#666', marginTop: '4px' }} className="no-print">
-                    (अपलोड करने के लिए क्लिक करें)
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div className="photo-box-container" style={{ cursor: 'pointer' }} onClick={() => fileInputRef.current?.click()}>
+                {formData.photoUrl ? (
+                  <img src={formData.photoUrl} alt="मुखिया फोटो" className="photo-preview-img" />
+                ) : (
+                  <div className="photo-box-label">
+                    <Upload size={22} style={{ margin: '0 auto 4px auto', color: '#7B1113' }} />
+                    <div>मुखिया की फोटो</div>
+                    <div style={{ fontSize: '7.5pt', color: '#666', marginTop: '2px' }} className="no-print">
+                      (अपलोड / फोटो खींचे)
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+
+              {/* No-Print Action Buttons for Photo Upload & Camera */}
+              <div className="no-print" style={{ marginTop: '8px', display: 'flex', gap: '6px', width: '100%', justifyContent: 'center' }}>
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  style={{ padding: '4px 8px', fontSize: '8pt', color: '#333', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  <Upload size={13} /> {uploading ? 'अपलोड...' : 'फ़ाइल'}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary" 
+                  style={{ padding: '4px 8px', fontSize: '8pt', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  onClick={startCamera}
+                  disabled={uploading}
+                >
+                  <Camera size={13} /> कैमरा
+                </button>
+              </div>
+
               <input 
                 type="file" 
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 accept="image/*"
+                onChange={handlePhotoUpload}
+              />
+              <input 
+                type="file" 
+                ref={cameraInputRef}
+                style={{ display: 'none' }}
+                accept="image/*"
+                capture="user"
                 onChange={handlePhotoUpload}
               />
             </div>
@@ -897,6 +999,83 @@ export default function PaperForm({ initialData = null, onSaved = null, onCancel
           <Printer size={18} /> प्रिंट करें (Print / PDF)
         </button>
       </div>
+
+      {/* Live Camera Popup Modal */}
+      {showCameraModal && (
+        <div className="no-print" style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '20px',
+            maxWidth: '460px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+            position: 'relative'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 style={{ fontSize: '1.1rem', margin: 0, color: '#7B1113', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Camera size={20} /> लाइव कैमरा फोटो
+              </h3>
+              <button 
+                type="button" 
+                onClick={stopCamera} 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={22} color="#666" />
+              </button>
+            </div>
+
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              height: '300px',
+              background: '#000',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={stopCamera}
+                style={{ padding: '8px 16px', color: '#333' }}
+              >
+                रद्द करें (Cancel)
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={capturePhotoFromCamera}
+                style={{ padding: '8px 20px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Camera size={16} /> फोटो खींचें (Capture)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
