@@ -73,6 +73,48 @@ if (
 }
 const upload = multer({ storage });
 
+// Extract valid image / resource URL from plain string or Google Sheets =HYPERLINK formula
+const extractUrl = (val) => {
+  if (!val) return "";
+  const str = String(val).trim();
+  if (!str) return "";
+
+  // 1. Check for formula: =HYPERLINK("https://...", "फोटो देखें") or =HYPERLINK('...', '...')
+  const match = str.match(/=HYPERLINK\(\s*["']([^"']+)["']/i);
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+
+  // 2. Direct URLs (Cloudinary, Local server, Data URI)
+  if (
+    str.startsWith("http://") ||
+    str.startsWith("https://") ||
+    str.startsWith("data:image/") ||
+    str.startsWith("/uploads/")
+  ) {
+    return str;
+  }
+
+  // 3. Fallback check for Cloudinary or uploads substring
+  if (str.includes("res.cloudinary.com") || str.includes("/uploads/")) {
+    const urlMatch = str.match(/(https?:\/\/[^\s"']+)/);
+    if (urlMatch && urlMatch[1]) return urlMatch[1];
+  }
+
+  // 4. If it's just Hindi/English label text without URL, return empty
+  if (
+    str === "फोटो देखें" ||
+    str === "हस्ताक्षर देखें" ||
+    str.includes("देखें") ||
+    str === "View Photo" ||
+    str === "View Signature"
+  ) {
+    return "";
+  }
+
+  return "";
+};
+
 // Local JSON Database Helper for robust persistence & quick read/edits
 const LOCAL_DB_PATH = path.join(dataDir, "submissions.json");
 const COUNTER_PATH = path.join(dataDir, "counter.json");
@@ -81,7 +123,15 @@ const getLocalDb = () => {
   if (!fs.existsSync(LOCAL_DB_PATH)) return [];
   try {
     const raw = fs.readFileSync(LOCAL_DB_PATH, "utf-8");
-    return JSON.parse(raw);
+    const records = JSON.parse(raw);
+    if (Array.isArray(records)) {
+      return records.map((r) => ({
+        ...r,
+        photoUrl: extractUrl(r.photoUrl),
+        signatureUrl: extractUrl(r.signatureUrl),
+      }));
+    }
+    return [];
   } catch (err) {
     return [];
   }
@@ -272,12 +322,15 @@ const recordMatchesSearch = (record, searchTerm) => {
     .toUpperCase();
   if (!term) return false;
 
-  const registrationId = String(record.registrationId || "").toUpperCase();
+  const registrationId = String(record.registrationId || "").trim().toUpperCase();
   if (registrationId === term || registrationId.includes(term)) return true;
 
   const numericSearch = normalizeDigits(term);
   if (numericSearch && normalizeDigits(registrationId).endsWith(numericSearch))
     return true;
+
+  const headName = String(record.headName || "").trim().toUpperCase();
+  if (headName && headName.includes(term)) return true;
 
   return numericSearch
     ? normalizeDigits(record.mobileNumber).includes(numericSearch)
@@ -288,64 +341,72 @@ const recordMatchesSearch = (record, searchTerm) => {
 
 const getRecordsFromGoogleSheets = async (sheets, spreadsheetId) => {
   const [familiesResult, membersResult] = await Promise.all([
-    sheets.spreadsheets.values.get({ spreadsheetId, range: "Families!A2:Z" }),
+    sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: "Families!A2:Z",
+      valueRenderOption: "FORMULA",
+    }),
     sheets.spreadsheets.values.get({
       spreadsheetId,
       range: "'Family Members'!A2:I",
+      valueRenderOption: "FORMATTED_VALUE",
     }),
   ]);
 
   const membersByRegistrationId = {};
   for (const row of membersResult.data.values || []) {
-    const registrationId = row[0];
+    const registrationId = row[0] ? String(row[0]).trim() : "";
     if (!registrationId) continue;
     if (!membersByRegistrationId[registrationId])
       membersByRegistrationId[registrationId] = [];
     membersByRegistrationId[registrationId].push({
       registrationId,
       id: Number(row[1]) || membersByRegistrationId[registrationId].length + 1,
-      name: row[2] || "",
-      age: row[3] || "",
-      relation: row[4] || "",
-      education: row[5] || "",
-      occupation: row[6] || "",
-      maritalStatus: row[7] || "",
-      mobile: row[8] || "",
+      name: row[2] != null ? String(row[2]).trim() : "",
+      age: row[3] != null ? String(row[3]).trim() : "",
+      relation: row[4] != null ? String(row[4]).trim() : "",
+      education: row[5] != null ? String(row[5]).trim() : "",
+      occupation: row[6] != null ? String(row[6]).trim() : "",
+      maritalStatus: row[7] != null ? String(row[7]).trim() : "",
+      mobile: row[8] != null ? String(row[8]).trim() : "",
     });
   }
 
   return (familiesResult.data.values || [])
-    .filter((row) => row[0])
-    .map((row) => ({
-      registrationId: row[0],
-      submissionDate: row[1] || "",
-      headName: row[2] || "",
-      headVillage: row[3] || "",
-      headAge: row[4] || "",
-      headEducation: row[5] || "",
-      mobileNumber: row[6] || "",
-      fatherName: row[7] || "",
-      fatherGotra: row[8] || "",
-      motherName: row[9] || "",
-      motherGotra: row[10] || "",
-      wifeName: row[11] || "",
-      wifeVillage: row[12] || "",
-      wifeAge: row[13] || "",
-      wifeEducation: row[14] || "",
-      fatherInLawName: row[15] || "",
-      fatherInLawVillage: row[16] || "",
-      motherInLawName: row[17] || "",
-      motherInLawVillage: row[18] || "",
-      currentAddress: row[19] || "",
-      permanentAddress: row[20] || "",
-      occupation1: row[21] || "",
-      occupation2: row[22] || "",
-      photoUrl: row[23] || "",
-      signatureUrl: row[24] || "",
-      otherDetails: row[25] || "",
-      members: membersByRegistrationId[row[0]] || [],
-      updatedAt: "",
-    }));
+    .filter((row) => row && row[0] && String(row[0]).trim() !== "")
+    .map((row) => {
+      const regId = String(row[0]).trim();
+      return {
+        registrationId: regId,
+        submissionDate: row[1] != null ? String(row[1]).trim() : "",
+        headName: row[2] != null ? String(row[2]).trim() : "",
+        headVillage: row[3] != null ? String(row[3]).trim() : "",
+        headAge: row[4] != null ? String(row[4]).trim() : "",
+        headEducation: row[5] != null ? String(row[5]).trim() : "",
+        mobileNumber: row[6] != null ? String(row[6]).trim() : "",
+        fatherName: row[7] != null ? String(row[7]).trim() : "",
+        fatherGotra: row[8] != null ? String(row[8]).trim() : "",
+        motherName: row[9] != null ? String(row[9]).trim() : "",
+        motherGotra: row[10] != null ? String(row[10]).trim() : "",
+        wifeName: row[11] != null ? String(row[11]).trim() : "",
+        wifeVillage: row[12] != null ? String(row[12]).trim() : "",
+        wifeAge: row[13] != null ? String(row[13]).trim() : "",
+        wifeEducation: row[14] != null ? String(row[14]).trim() : "",
+        fatherInLawName: row[15] != null ? String(row[15]).trim() : "",
+        fatherInLawVillage: row[16] != null ? String(row[16]).trim() : "",
+        motherInLawName: row[17] != null ? String(row[17]).trim() : "",
+        motherInLawVillage: row[18] != null ? String(row[18]).trim() : "",
+        currentAddress: row[19] != null ? String(row[19]).trim() : "",
+        permanentAddress: row[20] != null ? String(row[20]).trim() : "",
+        occupation1: row[21] != null ? String(row[21]).trim() : "",
+        occupation2: row[22] != null ? String(row[22]).trim() : "",
+        photoUrl: extractUrl(row[23]),
+        signatureUrl: extractUrl(row[24]),
+        otherDetails: row[25] != null ? String(row[25]).trim() : "",
+        members: membersByRegistrationId[regId] || [],
+        updatedAt: "",
+      };
+    });
 };
 
 const getAvailableRecords = async () => {

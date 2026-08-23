@@ -46,7 +46,9 @@ export default function PaperForm({
     headAge: data?.headAge || "",
     headEducation: data?.headEducation || "",
     fatherName: data?.fatherName || "",
+    fatherGotra: data?.fatherGotra || "",
     motherName: data?.motherName || "",
+    motherGotra: data?.motherGotra || "",
     wifeName: data?.wifeName || "",
     wifeAge: data?.wifeAge || "",
     wifeEducation: data?.wifeEducation || "",
@@ -77,7 +79,9 @@ export default function PaperForm({
       headAge: "",
       headEducation: "",
       fatherName: "",
+      fatherGotra: "",
       motherName: "",
+      motherGotra: "",
       wifeName: "",
       wifeAge: "",
       wifeEducation: "",
@@ -126,14 +130,36 @@ export default function PaperForm({
       const data = await res.json();
       if (data.success && data.record) {
         const rec = data.record;
+
+        let loadedMembers =
+          rec.members && rec.members.length > 0 ? rec.members : [];
+        if (loadedMembers.length < 7) {
+          const padded = [...loadedMembers];
+          for (let i = loadedMembers.length; i < 7; i++) {
+            padded.push({
+              id: i + 1,
+              name: "",
+              age: "",
+              relation: "",
+              education: "",
+              occupation: "",
+              maritalStatus: "",
+              mobile: "",
+            });
+          }
+          loadedMembers = padded;
+        }
+
         setFormData({
-          registrationId: rec.registrationId,
+          registrationId: rec.registrationId || "",
           isEdit: true,
           headName: rec.headName || "",
           headAge: rec.headAge || "",
           headEducation: rec.headEducation || "",
           fatherName: rec.fatherName || "",
+          fatherGotra: rec.fatherGotra || "",
           motherName: rec.motherName || "",
+          motherGotra: rec.motherGotra || "",
           wifeName: rec.wifeName || "",
           wifeAge: rec.wifeAge || "",
           wifeEducation: rec.wifeEducation || "",
@@ -151,10 +177,7 @@ export default function PaperForm({
           photoUrl: rec.photoUrl || "",
           signatureUrl: rec.signatureUrl || "",
           otherDetails: rec.otherDetails || "",
-          members:
-            rec.members && rec.members.length > 0
-              ? rec.members
-              : INITIAL_MEMBERS,
+          members: loadedMembers,
         });
         setSuccessInfo(null);
         alert(
