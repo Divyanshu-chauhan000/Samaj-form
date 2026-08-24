@@ -57,12 +57,18 @@ export default function AdminRecords({
   };
 
   const filteredRecords = records.filter((r) => {
-    const term = searchTerm.toLowerCase();
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return true;
+    const memberMatch = Array.isArray(r.members) && r.members.some(m => 
+      (m.name && m.name.toLowerCase().includes(term)) ||
+      (m.mobile && String(m.mobile).includes(term))
+    );
     return (
       (r.registrationId && r.registrationId.toLowerCase().includes(term)) ||
       (r.headName && r.headName.toLowerCase().includes(term)) ||
       (r.mobileNumber && String(r.mobileNumber).toLowerCase().includes(term)) ||
-      (r.headVillage && String(r.headVillage).toLowerCase().includes(term))
+      (r.headVillage && String(r.headVillage).toLowerCase().includes(term)) ||
+      memberMatch
     );
   });
 

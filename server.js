@@ -99,9 +99,16 @@ const extractUrl = (val) => {
   if (str.includes("res.cloudinary.com") || str.includes("/uploads/")) {
     const urlMatch = str.match(/(https?:\/\/[^\s"']+)/);
     if (urlMatch && urlMatch[1]) return urlMatch[1];
+    const relMatch = str.match(/(\/uploads\/[^\s"']+)/);
+    if (relMatch && relMatch[1]) return relMatch[1];
   }
 
-  // 4. If it's just Hindi/English label text without URL, return empty
+  // 4. If string looks like a filename (e.g. photo_123.jpg or upload_123.png)
+  if (/\.(jpe?g|png|webp|gif|bmp)$/i.test(str) && !str.includes(" ")) {
+    return `/uploads/${str.replace(/^uploads\//, "")}`;
+  }
+
+  // 5. If it's just Hindi/English label text without URL, return empty
   if (
     str === "फोटो देखें" ||
     str === "हस्ताक्षर देखें" ||
@@ -316,27 +323,106 @@ const ensureSheetsHeaders = async (sheets, spreadsheetId) => {
 
 const normalizeDigits = (value) => String(value || "").replace(/\D/g, "");
 
-const recordMatchesSearch = (record, searchTerm) => {
-  const term = String(searchTerm || "")
-    .trim()
-    .toUpperCase();
-  if (!term) return false;
+// Check if a record matches search term and calculate a relevance/completeness score
+const calculateRecordSearchScore = (record, searchTerm) => {
+  const term = String(searchTerm || "").trim().toUpperCase();
+  if (!term) return 0;
 
   const registrationId = String(record.registrationId || "").trim().toUpperCase();
-  if (registrationId === term || registrationId.includes(term)) return true;
-
   const numericSearch = normalizeDigits(term);
-  if (numericSearch && normalizeDigits(registrationId).endsWith(numericSearch))
-    return true;
-
+  const numericRegId = normalizeDigits(registrationId);
+  const headMobile = normalizeDigits(record.mobileNumber);
   const headName = String(record.headName || "").trim().toUpperCase();
-  if (headName && headName.includes(term)) return true;
 
-  return numericSearch
-    ? normalizeDigits(record.mobileNumber).includes(numericSearch)
-    : String(record.mobileNumber || "")
-        .toUpperCase()
-        .includes(term);
+  let score = 0;
+
+  // 1. Exact Registration ID match (Highest Priority)
+  if (registrationId === term) {
+    score = 2000;
+  } else if (registrationId.includes(term) && term.length > 3) {
+    score = 1500;
+  } else if (
+    numericSearch &&
+    numericSearch.length <= 6 &&
+    numericRegId.endsWith(numericSearch)
+  ) {
+    // Search by numeric ID (e.g. "9" -> "KSP-2026-00009")
+    score = 1200;
+  }
+
+  // 2. Mobile Number match (Head or Family Member)
+  if (numericSearch && numericSearch.length >= 4) {
+    // 10-digit normalized phone match
+    const search10 = numericSearch.slice(-10);
+    const head10 = headMobile.slice(-10);
+
+    if (headMobile && (headMobile === numericSearch || (search10.length === 10 && head10 === search10))) {
+      score = Math.max(score, 1000);
+    } else if (headMobile && (headMobile.includes(numericSearch) || (search10.length >= 6 && headMobile.includes(search10)))) {
+      score = Math.max(score, 800);
+    }
+
+    // Check Family Members mobile numbers
+    if (Array.isArray(record.members)) {
+      for (const m of record.members) {
+        const memberMobile = normalizeDigits(m.mobile);
+        const member10 = memberMobile.slice(-10);
+        if (memberMobile && (memberMobile === numericSearch || (search10.length === 10 && member10 === search10))) {
+          score = Math.max(score, 750);
+          break;
+        } else if (memberMobile && memberMobile.includes(numericSearch)) {
+          score = Math.max(score, 600);
+          break;
+        }
+      }
+    }
+  }
+
+  // 3. Head Name match
+  if (headName) {
+    if (headName === term) {
+      score = Math.max(score, 500);
+    } else if (headName.includes(term) && term.length >= 3) {
+      score = Math.max(score, 400);
+    }
+  }
+
+  // If score is 0, no match
+  if (score === 0) return 0;
+
+  // Bonus for image presence and completeness so the richest version is loaded
+  if (record.photoUrl && record.photoUrl.trim() !== "") {
+    score += 100;
+  }
+  if (record.signatureUrl && record.signatureUrl.trim() !== "") {
+    score += 50;
+  }
+  if (Array.isArray(record.members) && record.members.some((m) => m.name && m.name.trim() !== "")) {
+    score += 20;
+  }
+
+  return score;
+};
+
+const recordMatchesSearch = (record, searchTerm) => {
+  return calculateRecordSearchScore(record, searchTerm) > 0;
+};
+
+const findBestMatchingRecord = (records, searchTerm) => {
+  if (!Array.isArray(records) || records.length === 0) return null;
+
+  let bestRecord = null;
+  let highestScore = 0;
+
+  for (const record of records) {
+    const score = calculateRecordSearchScore(record, searchTerm);
+    if (score > highestScore) {
+      highestScore = score;
+      bestRecord = record;
+    }
+  }
+
+  return bestRecord;
 };
 
 const getRecordsFromGoogleSheets = async (sheets, spreadsheetId) => {
@@ -676,10 +762,10 @@ app.get("/api/records", async (req, res) => {
   res.json({ success: true, records });
 });
 
-// Get Single Record by Registration ID (or Numeric Part)
+// Get Single Record by Registration ID (or Numeric Part) or Mobile Number
 app.get("/api/records/:id", async (req, res) => {
   const records = await getAvailableRecords();
-  const record = records.find((r) => recordMatchesSearch(r, req.params.id));
+  const record = findBestMatchingRecord(records, req.params.id);
 
   if (!record) {
     return res
@@ -695,7 +781,7 @@ app.get("/api/records/:id", async (req, res) => {
 // Delete Record
 app.delete("/api/records/:id", async (req, res) => {
   const records = await getAvailableRecords();
-  const record = records.find((r) => recordMatchesSearch(r, req.params.id));
+  const record = findBestMatchingRecord(records, req.params.id);
   if (!record)
     return res
       .status(404)
