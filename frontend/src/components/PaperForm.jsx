@@ -215,22 +215,25 @@ export default function PaperForm({
   };
 
   const handleAddMember = () => {
-    setFormData((prev) => ({
-      ...prev,
-      members: [
-        ...prev.members,
-        {
-          id: prev.members.length + 1,
-          name: "",
-          age: "",
-          relation: "",
-          education: "",
-          occupation: "",
-          maritalStatus: "",
-          mobile: "",
-        },
-      ],
-    }));
+    setFormData((prev) => {
+      const maxId = prev.members.reduce((max, m) => Math.max(max, Number(m.id) || 0), 0);
+      return {
+        ...prev,
+        members: [
+          ...prev.members,
+          {
+            id: maxId + 1,
+            name: "",
+            age: "",
+            relation: "",
+            education: "",
+            occupation: "",
+            maritalStatus: "",
+            mobile: "",
+          },
+        ],
+      };
+    });
   };
 
   const handleRemoveMember = (index) => {

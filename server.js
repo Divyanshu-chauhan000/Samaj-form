@@ -591,7 +591,7 @@ app.post("/api/submit", async (req, res) => {
       : -1;
 
     // Generate NEW Registration ID if it's not explicitly an edit or if the registrationId is missing/invalid
-    if (!formData.isEdit || existingIndex < 0 || !registrationId) {
+    if (!formData.isEdit || !registrationId) {
       registrationId = generateNextRegistrationId();
     }
 
@@ -700,7 +700,7 @@ app.post("/api/submit", async (req, res) => {
             .filter((m) => m.name && m.name.trim() !== "")
             .map((m, index) => [
               registrationId,
-              index + 1,
+              m.id || index + 1,
               m.name || "",
               m.age || "",
               m.relation || "",
