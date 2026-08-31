@@ -19,13 +19,13 @@ connectDB();
 
 // CORS Configuration
 const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3002',
-  'http://localhost:5000',
-  'https://samaj-parichay-form.onrender.com',
-  'https://samaj-form-admin.onrender.com',
+  "http://localhost:3000",
+  "http://localhost:3002",
+  "http://localhost:5000",
+  "https://samaj-parichay-form.onrender.com",
+  "https://samaj-form-admin.onrender.com",
   process.env.FRONTEND_URL,
-  process.env.ADMIN_URL
+  process.env.ADMIN_URL,
 ].filter(Boolean);
 
 const corsOptions = {
@@ -33,12 +33,12 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 // Middleware

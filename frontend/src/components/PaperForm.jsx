@@ -217,7 +217,10 @@ export default function PaperForm({
 
   const handleAddMember = () => {
     setFormData((prev) => {
-      const maxId = prev.members.reduce((max, m) => Math.max(max, Number(m.id) || 0), 0);
+      const maxId = prev.members.reduce(
+        (max, m) => Math.max(max, Number(m.id) || 0),
+        0,
+      );
       return {
         ...prev,
         members: [

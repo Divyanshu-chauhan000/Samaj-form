@@ -45,7 +45,9 @@ export default function AdminRecords({
       return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/records/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE_URL}/api/records/${id}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
       if (data.success) {
         fetchRecords();
@@ -68,7 +70,7 @@ export default function AdminRecords({
       r.members.some(
         (m) =>
           (m.name && m.name.toLowerCase().includes(term)) ||
-          (m.mobile && String(m.mobile).includes(term))
+          (m.mobile && String(m.mobile).includes(term)),
       );
     return (
       (r.registrationId && r.registrationId.toLowerCase().includes(term)) ||
@@ -318,7 +320,8 @@ export default function AdminRecords({
                   A-Z संपूर्ण विवरण: {selectedRecordDetails.registrationId}
                 </h3>
                 <span style={{ fontSize: "0.85rem", color: "#666" }}>
-                  जमा करने की तारीख: {selectedRecordDetails.submissionDate || "—"}
+                  जमा करने की तारीख:{" "}
+                  {selectedRecordDetails.submissionDate || "—"}
                 </span>
               </div>
               <button
@@ -335,7 +338,9 @@ export default function AdminRecords({
             </div>
 
             {/* A-Z Grid Information */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            >
               {/* Head & Photo Section */}
               <div
                 style={{
@@ -365,135 +370,441 @@ export default function AdminRecords({
                     <img
                       src={selectedRecordDetails.photoUrl}
                       alt="Head Photo"
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
                       crossOrigin="anonymous"
                     />
                   ) : (
-                    <span style={{ color: "#aaa", fontSize: "0.8rem" }}>फोटो नहीं है</span>
+                    <span style={{ color: "#aaa", fontSize: "0.8rem" }}>
+                      फोटो नहीं है
+                    </span>
                   )}
                 </div>
 
                 <div style={{ flex: 1, minWidth: "240px" }}>
-                  <h4 style={{ color: "#7B1113", margin: "0 0 8px 0", fontSize: "1.1rem" }}>
+                  <h4
+                    style={{
+                      color: "#7B1113",
+                      margin: "0 0 8px 0",
+                      fontSize: "1.1rem",
+                    }}
+                  >
                     1. परिवार के मुखिया की जानकारी
                   </h4>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "0.92rem" }}>
-                    <div><strong>मुखिया का नाम:</strong> {selectedRecordDetails.headName || "—"}</div>
-                    <div><strong>गौत्र / मूल गाँव:</strong> {selectedRecordDetails.headVillage || "—"}</div>
-                    <div><strong>आयु:</strong> {selectedRecordDetails.headAge ? `${selectedRecordDetails.headAge} वर्ष` : "—"}</div>
-                    <div><strong>शिक्षा:</strong> {selectedRecordDetails.headEducation || "—"}</div>
-                    <div><strong>मोबाइल नंबर:</strong> {selectedRecordDetails.mobileNumber || "—"}</div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "8px",
+                      fontSize: "0.92rem",
+                    }}
+                  >
+                    <div>
+                      <strong>मुखिया का नाम:</strong>{" "}
+                      {selectedRecordDetails.headName || "—"}
+                    </div>
+                    <div>
+                      <strong>गौत्र / मूल गाँव:</strong>{" "}
+                      {selectedRecordDetails.headVillage || "—"}
+                    </div>
+                    <div>
+                      <strong>आयु:</strong>{" "}
+                      {selectedRecordDetails.headAge
+                        ? `${selectedRecordDetails.headAge} वर्ष`
+                        : "—"}
+                    </div>
+                    <div>
+                      <strong>शिक्षा:</strong>{" "}
+                      {selectedRecordDetails.headEducation || "—"}
+                    </div>
+                    <div>
+                      <strong>मोबाइल नंबर:</strong>{" "}
+                      {selectedRecordDetails.mobileNumber || "—"}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Parents Section */}
-              <div style={{ background: "#FFF", padding: "12px", borderRadius: "8px", border: "1px solid #E0E0E0" }}>
-                <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>2. माता-पिता की जानकारी</h4>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "0.9rem" }}>
-                  <div><strong>पिता का नाम:</strong> {selectedRecordDetails.fatherName || "—"}</div>
-                  <div><strong>पिता का गौत्र:</strong> {selectedRecordDetails.fatherGotra || "—"}</div>
-                  <div><strong>माता का नाम:</strong> {selectedRecordDetails.motherName || "—"}</div>
-                  <div><strong>माता का गौत्र:</strong> {selectedRecordDetails.motherGotra || "—"}</div>
+              <div
+                style={{
+                  background: "#FFF",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border: "1px solid #E0E0E0",
+                }}
+              >
+                <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>
+                  2. माता-पिता की जानकारी
+                </h4>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "8px",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  <div>
+                    <strong>पिता का नाम:</strong>{" "}
+                    {selectedRecordDetails.fatherName || "—"}
+                  </div>
+                  <div>
+                    <strong>पिता का गौत्र:</strong>{" "}
+                    {selectedRecordDetails.fatherGotra || "—"}
+                  </div>
+                  <div>
+                    <strong>माता का नाम:</strong>{" "}
+                    {selectedRecordDetails.motherName || "—"}
+                  </div>
+                  <div>
+                    <strong>माता का गौत्र:</strong>{" "}
+                    {selectedRecordDetails.motherGotra || "—"}
+                  </div>
                 </div>
               </div>
 
               {/* Spouse Section */}
-              <div style={{ background: "#FFF", padding: "12px", borderRadius: "8px", border: "1px solid #E0E0E0" }}>
-                <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>3. पत्नी की जानकारी</h4>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "0.9rem" }}>
-                  <div><strong>पत्नी का नाम:</strong> {selectedRecordDetails.wifeName || "—"}</div>
-                  <div><strong>पत्नी का गौत्र:</strong> {selectedRecordDetails.wifeVillage || "—"}</div>
-                  <div><strong>पत्नी की आयु:</strong> {selectedRecordDetails.wifeAge ? `${selectedRecordDetails.wifeAge} वर्ष` : "—"}</div>
-                  <div><strong>पत्नी की शिक्षा:</strong> {selectedRecordDetails.wifeEducation || "—"}</div>
+              <div
+                style={{
+                  background: "#FFF",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border: "1px solid #E0E0E0",
+                }}
+              >
+                <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>
+                  3. पत्नी की जानकारी
+                </h4>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "8px",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  <div>
+                    <strong>पत्नी का नाम:</strong>{" "}
+                    {selectedRecordDetails.wifeName || "—"}
+                  </div>
+                  <div>
+                    <strong>पत्नी का गौत्र:</strong>{" "}
+                    {selectedRecordDetails.wifeVillage || "—"}
+                  </div>
+                  <div>
+                    <strong>पत्नी की आयु:</strong>{" "}
+                    {selectedRecordDetails.wifeAge
+                      ? `${selectedRecordDetails.wifeAge} वर्ष`
+                      : "—"}
+                  </div>
+                  <div>
+                    <strong>पत्नी की शिक्षा:</strong>{" "}
+                    {selectedRecordDetails.wifeEducation || "—"}
+                  </div>
                 </div>
               </div>
 
               {/* In-Laws Section */}
-              <div style={{ background: "#FFF", padding: "12px", borderRadius: "8px", border: "1px solid #E0E0E0" }}>
-                <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>4. ससुराल पक्ष की जानकारी</h4>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "0.9rem" }}>
-                  <div><strong>ससुर जी का नाम:</strong> {selectedRecordDetails.fatherInLawName || "—"}</div>
-                  <div><strong>ससुर जी का गौत्र:</strong> {selectedRecordDetails.fatherInLawVillage || "—"}</div>
-                  <div><strong>सासू जी का नाम:</strong> {selectedRecordDetails.motherInLawName || "—"}</div>
-                  <div><strong>सासू जी का गौत्र:</strong> {selectedRecordDetails.motherInLawVillage || "—"}</div>
+              <div
+                style={{
+                  background: "#FFF",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border: "1px solid #E0E0E0",
+                }}
+              >
+                <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>
+                  4. ससुराल पक्ष की जानकारी
+                </h4>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "8px",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  <div>
+                    <strong>ससुर जी का नाम:</strong>{" "}
+                    {selectedRecordDetails.fatherInLawName || "—"}
+                  </div>
+                  <div>
+                    <strong>ससुर जी का गौत्र:</strong>{" "}
+                    {selectedRecordDetails.fatherInLawVillage || "—"}
+                  </div>
+                  <div>
+                    <strong>सासू जी का नाम:</strong>{" "}
+                    {selectedRecordDetails.motherInLawName || "—"}
+                  </div>
+                  <div>
+                    <strong>सासू जी का गौत्र:</strong>{" "}
+                    {selectedRecordDetails.motherInLawVillage || "—"}
+                  </div>
                 </div>
               </div>
 
               {/* Address & Occupation Section */}
-              <div style={{ background: "#FFF", padding: "12px", borderRadius: "8px", border: "1px solid #E0E0E0" }}>
-                <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>5. निवास व व्यवसाय का विवरण</h4>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "0.9rem", marginBottom: "8px" }}>
-                  <div><strong>व्यवसाय 1:</strong> {selectedRecordDetails.occupation1 || "—"}</div>
-                  <div><strong>व्यवसाय 2:</strong> {selectedRecordDetails.occupation2 || "—"}</div>
+              <div
+                style={{
+                  background: "#FFF",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border: "1px solid #E0E0E0",
+                }}
+              >
+                <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>
+                  5. निवास व व्यवसाय का विवरण
+                </h4>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "8px",
+                    fontSize: "0.9rem",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <div>
+                    <strong>व्यवसाय 1:</strong>{" "}
+                    {selectedRecordDetails.occupation1 || "—"}
+                  </div>
+                  <div>
+                    <strong>व्यवसाय 2:</strong>{" "}
+                    {selectedRecordDetails.occupation2 || "—"}
+                  </div>
                 </div>
                 <div style={{ fontSize: "0.9rem", marginBottom: "4px" }}>
-                  <strong>वर्तमान निवास स्थान:</strong> {selectedRecordDetails.currentAddress || "—"}
+                  <strong>वर्तमान निवास स्थान:</strong>{" "}
+                  {selectedRecordDetails.currentAddress || "—"}
                 </div>
                 <div style={{ fontSize: "0.9rem" }}>
-                  <strong>स्थाई निवास स्थान:</strong> {selectedRecordDetails.permanentAddress || "—"}
+                  <strong>स्थाई निवास स्थान:</strong>{" "}
+                  {selectedRecordDetails.permanentAddress || "—"}
                 </div>
               </div>
 
               {/* Signature & Other Details */}
               <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-                <div style={{ flex: 1, background: "#FFF", padding: "12px", borderRadius: "8px", border: "1px solid #E0E0E0" }}>
-                  <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>6. अन्य विवरण</h4>
+                <div
+                  style={{
+                    flex: 1,
+                    background: "#FFF",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    border: "1px solid #E0E0E0",
+                  }}
+                >
+                  <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>
+                    6. अन्य विवरण
+                  </h4>
                   <p style={{ margin: 0, fontSize: "0.9rem", color: "#444" }}>
                     {selectedRecordDetails.otherDetails || "कोई विवरण नहीं"}
                   </p>
                 </div>
 
-                <div style={{ width: "200px", background: "#FFF", padding: "12px", borderRadius: "8px", border: "1px solid #E0E0E0", textAlign: "center" }}>
-                  <h4 style={{ color: "#7B1113", margin: "0 0 8px 0", fontSize: "0.9rem" }}>7. मुखिया के हस्ताक्षर</h4>
-                  <div style={{ height: "60px", border: "1px dashed #8B0000", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div
+                  style={{
+                    width: "200px",
+                    background: "#FFF",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    border: "1px solid #E0E0E0",
+                    textAlign: "center",
+                  }}
+                >
+                  <h4
+                    style={{
+                      color: "#7B1113",
+                      margin: "0 0 8px 0",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    7. मुखिया के हस्ताक्षर
+                  </h4>
+                  <div
+                    style={{
+                      height: "60px",
+                      border: "1px dashed #8B0000",
+                      borderRadius: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
                     {selectedRecordDetails.signatureUrl ? (
-                      <img src={selectedRecordDetails.signatureUrl} alt="Signature" style={{ maxHeight: "100%", maxWidth: "100%" }} crossOrigin="anonymous" />
+                      <img
+                        src={selectedRecordDetails.signatureUrl}
+                        alt="Signature"
+                        style={{ maxHeight: "100%", maxWidth: "100%" }}
+                        crossOrigin="anonymous"
+                      />
                     ) : (
-                      <span style={{ fontSize: "0.8rem", color: "#aaa" }}>हस्ताक्षर नहीं है</span>
+                      <span style={{ fontSize: "0.8rem", color: "#aaa" }}>
+                        हस्ताक्षर नहीं है
+                      </span>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Family Members Table */}
-              <div style={{ background: "#FFF", padding: "12px", borderRadius: "8px", border: "1px solid #E0E0E0" }}>
+              <div
+                style={{
+                  background: "#FFF",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border: "1px solid #E0E0E0",
+                }}
+              >
                 <h4 style={{ color: "#7B1113", margin: "0 0 8px 0" }}>
-                  8. पारिवारिक सदस्यों की सूची ({selectedRecordDetails.members ? selectedRecordDetails.members.filter(m => m.name).length : 0})
+                  8. पारिवारिक सदस्यों की सूची (
+                  {selectedRecordDetails.members
+                    ? selectedRecordDetails.members.filter((m) => m.name).length
+                    : 0}
+                  )
                 </h4>
-                {selectedRecordDetails.members && selectedRecordDetails.members.filter(m => m.name).length > 0 ? (
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                {selectedRecordDetails.members &&
+                selectedRecordDetails.members.filter((m) => m.name).length >
+                  0 ? (
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      fontSize: "0.88rem",
+                    }}
+                  >
                     <thead>
                       <tr style={{ background: "#7B1113", color: "#FFF" }}>
-                        <th style={{ padding: "6px", border: "1px solid #DDD" }}>#</th>
-                        <th style={{ padding: "6px", border: "1px solid #DDD" }}>सदस्य का नाम</th>
-                        <th style={{ padding: "6px", border: "1px solid #DDD" }}>संबंध</th>
-                        <th style={{ padding: "6px", border: "1px solid #DDD" }}>आयु</th>
-                        <th style={{ padding: "6px", border: "1px solid #DDD" }}>शिक्षा</th>
-                        <th style={{ padding: "6px", border: "1px solid #DDD" }}>व्यवसाय</th>
-                        <th style={{ padding: "6px", border: "1px solid #DDD" }}>वैवाहिक स्थिति</th>
-                        <th style={{ padding: "6px", border: "1px solid #DDD" }}>मोबाइल नंबर</th>
+                        <th
+                          style={{ padding: "6px", border: "1px solid #DDD" }}
+                        >
+                          #
+                        </th>
+                        <th
+                          style={{ padding: "6px", border: "1px solid #DDD" }}
+                        >
+                          सदस्य का नाम
+                        </th>
+                        <th
+                          style={{ padding: "6px", border: "1px solid #DDD" }}
+                        >
+                          संबंध
+                        </th>
+                        <th
+                          style={{ padding: "6px", border: "1px solid #DDD" }}
+                        >
+                          आयु
+                        </th>
+                        <th
+                          style={{ padding: "6px", border: "1px solid #DDD" }}
+                        >
+                          शिक्षा
+                        </th>
+                        <th
+                          style={{ padding: "6px", border: "1px solid #DDD" }}
+                        >
+                          व्यवसाय
+                        </th>
+                        <th
+                          style={{ padding: "6px", border: "1px solid #DDD" }}
+                        >
+                          वैवाहिक स्थिति
+                        </th>
+                        <th
+                          style={{ padding: "6px", border: "1px solid #DDD" }}
+                        >
+                          मोबाइल नंबर
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {selectedRecordDetails.members
-                        .filter(m => m.name)
+                        .filter((m) => m.name)
                         .map((m, idx) => (
-                          <tr key={idx} style={{ background: idx % 2 === 0 ? "#FFF" : "#F9F9F9" }}>
-                            <td style={{ padding: "6px", border: "1px solid #DDD", textAlign: "center" }}>{idx + 1}</td>
-                            <td style={{ padding: "6px", border: "1px solid #DDD" }}>{m.name}</td>
-                            <td style={{ padding: "6px", border: "1px solid #DDD" }}>{m.relation || "—"}</td>
-                            <td style={{ padding: "6px", border: "1px solid #DDD", textAlign: "center" }}>{m.age || "—"}</td>
-                            <td style={{ padding: "6px", border: "1px solid #DDD" }}>{m.education || "—"}</td>
-                            <td style={{ padding: "6px", border: "1px solid #DDD" }}>{m.occupation || "—"}</td>
-                            <td style={{ padding: "6px", border: "1px solid #DDD" }}>{m.maritalStatus || "—"}</td>
-                            <td style={{ padding: "6px", border: "1px solid #DDD" }}>{m.mobile || "—"}</td>
+                          <tr
+                            key={idx}
+                            style={{
+                              background: idx % 2 === 0 ? "#FFF" : "#F9F9F9",
+                            }}
+                          >
+                            <td
+                              style={{
+                                padding: "6px",
+                                border: "1px solid #DDD",
+                                textAlign: "center",
+                              }}
+                            >
+                              {idx + 1}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px",
+                                border: "1px solid #DDD",
+                              }}
+                            >
+                              {m.name}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px",
+                                border: "1px solid #DDD",
+                              }}
+                            >
+                              {m.relation || "—"}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px",
+                                border: "1px solid #DDD",
+                                textAlign: "center",
+                              }}
+                            >
+                              {m.age || "—"}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px",
+                                border: "1px solid #DDD",
+                              }}
+                            >
+                              {m.education || "—"}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px",
+                                border: "1px solid #DDD",
+                              }}
+                            >
+                              {m.occupation || "—"}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px",
+                                border: "1px solid #DDD",
+                              }}
+                            >
+                              {m.maritalStatus || "—"}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px",
+                                border: "1px solid #DDD",
+                              }}
+                            >
+                              {m.mobile || "—"}
+                            </td>
                           </tr>
                         ))}
                     </tbody>
                   </table>
                 ) : (
-                  <div style={{ color: "#888", fontSize: "0.88rem" }}>कोई पारिवारिक सदस्य दर्ज नहीं है।</div>
+                  <div style={{ color: "#888", fontSize: "0.88rem" }}>
+                    कोई पारिवारिक सदस्य दर्ज नहीं है।
+                  </div>
                 )}
               </div>
             </div>
