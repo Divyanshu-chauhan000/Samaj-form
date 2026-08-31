@@ -1,0 +1,66 @@
+.directory-card {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 20px auto;
+  border: 2px solid #8B0000;
+  border-radius: 8px;
+  background: #FFFDF9;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  color: #1A1A1A;
+}
+
+.directory-card-header {
+  border-bottom: 2px double #8B0000;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.directory-card-title {
+  color: #7B1113;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.directory-card-body {
+  display: flex;
+  gap: 16px;
+}
+
+.directory-photo-area {
+  width: 110px;
+  height: 130px;
+  border: 1px dashed #8B0000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #FFF;
+}
+
+.directory-info-area {
+  flex: 1;
+}
+
+.directory-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.directory-table th, .directory-table td {
+  border: 1px solid #CCC;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.directory-table th {
+  background-color: #7B1113;
+  color: white;
+}

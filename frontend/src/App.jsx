@@ -13,10 +13,12 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main View Area */}
+      {/* Main Form View */}
       <main className="main-content">
         <PaperForm />
       </main>
     </div>
   );
 }
+
+
