@@ -1,0 +1,132 @@
+/* A4 Document and Form Print Styling */
+
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Yatra+One&family=Rozha+One&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary-burgundy: #7B1113;
+  --secondary-burgundy: #590d0e;
+  --border-burgundy: #8B0000;
+  --paper-bg: #fffdf9;
+  --text-dark: #1a1a1a;
+  --line-color: #555;
+  --highlight-gold: #c59b27;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Noto Sans Devanagari', 'Tiro Devanagari Hindi', sans-serif;
+  background-color: #f4f1ea;
+  color: var(--text-dark);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Screen Wrapper */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation Header */
+.app-header {
+  background: linear-gradient(135deg, #4A0404 0%, #7B1113 100%);
+  color: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-title {
+  font-family: 'Rozha One', 'Tiro Devanagari Hindi', serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn {
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--highlight-gold);
+  color: #2b1d03;
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-danger {
+  background-color: #c62828;
+  color: white;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem 1rem;
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+}
+
+.search-bar-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.records-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.records-table th,
+.records-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+}
+
+.records-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
