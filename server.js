@@ -4,6 +4,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { google } = require("googleapis");
+const { MongoClient } = require("mongodb");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const app = express();
@@ -11,6 +12,30 @@ const PORT = process.env.PORT || 5000;
 
 // Enable proxy trust for cloud platforms like Render / Heroku
 app.set("trust proxy", 1);
+
+// MongoDB Initialization
+let db;
+let submissionsCollection;
+let countersCollection;
+
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  console.error("Missing MONGODB_URI in .env");
+  process.exit(1);
+}
+
+const client = new MongoClient(MONGODB_URI);
+client.connect()
+  .then(() => {
+    db = client.db();
+    submissionsCollection = db.collection("submissions");
+    countersCollection = db.collection("counters");
+    console.log("Connected to MongoDB successfully");
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  });
 
 // Middleware
 app.use(cors());
@@ -122,65 +147,24 @@ const extractUrl = (val) => {
   return "";
 };
 
-// Local JSON Database Helper for robust persistence & quick read/edits
-const LOCAL_DB_PATH = path.join(dataDir, "submissions.json");
-const COUNTER_PATH = path.join(dataDir, "counter.json");
+// Deprecated Local JSON functions - kept empty for backward compatibility in other parts of code if any
+const getLocalDb = () => [];
+const saveLocalDb = (data) => {};
 
-const getLocalDb = () => {
-  if (!fs.existsSync(LOCAL_DB_PATH)) return [];
+const generateNextRegistrationId = async () => {
   try {
-    const raw = fs.readFileSync(LOCAL_DB_PATH, "utf-8");
-    const records = JSON.parse(raw);
-    if (Array.isArray(records)) {
-      return records.map((r) => ({
-        ...r,
-        photoUrl: extractUrl(r.photoUrl),
-        signatureUrl: extractUrl(r.signatureUrl),
-      }));
-    }
-    return [];
+    const result = await countersCollection.findOneAndUpdate(
+      { _id: "registration" },
+      { $inc: { seq: 1 } },
+      { returnDocument: "after", upsert: true }
+    );
+    const nextCounter = result.seq;
+    const padded = String(nextCounter).padStart(5, "0");
+    return `KSP-2026-${padded}`;
   } catch (err) {
-    return [];
+    console.error('[MongoDB Counter Error]:', err.message);
+    throw new Error("Could not generate Registration ID");
   }
-};
-
-const saveLocalDb = (data) => {
-  fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(data, null, 2), "utf-8");
-};
-
-const generateNextRegistrationId = () => {
-  const db = getLocalDb();
-  let maxNum = 0;
-
-  // Scan local DB for the highest existing registration number
-  db.forEach((r) => {
-    if (r.registrationId && r.registrationId.startsWith("KSP-2026-")) {
-      const parts = r.registrationId.split("-");
-      const num = parseInt(parts[parts.length - 1], 10);
-      if (!isNaN(num) && num > maxNum) {
-        maxNum = num;
-      }
-    }
-  });
-
-  // Also sync with counter.json file
-  if (fs.existsSync(COUNTER_PATH)) {
-    try {
-      const cntData = JSON.parse(fs.readFileSync(COUNTER_PATH, "utf-8"));
-      if (cntData.counter && cntData.counter > maxNum) {
-        maxNum = cntData.counter;
-      }
-    } catch (e) {}
-  }
-
-  const nextCounter = maxNum + 1;
-  fs.writeFileSync(
-    COUNTER_PATH,
-    JSON.stringify({ counter: nextCounter }),
-    "utf-8",
-  );
-  const padded = String(nextCounter).padStart(5, "0");
-  return `KSP-2026-${padded}`;
 };
 
 // Google Sheets API Authorization Helper
@@ -496,20 +480,13 @@ const getRecordsFromGoogleSheets = async (sheets, spreadsheetId) => {
 };
 
 const getAvailableRecords = async () => {
-  const gSheets = await getGoogleSheetsClient();
-  if (gSheets && gSheets.sheets) {
-    try {
-      const records = await getRecordsFromGoogleSheets(
-        gSheets.sheets,
-        gSheets.spreadsheetId,
-      );
-      saveLocalDb(records);
-      return records;
-    } catch (err) {
-      console.error("[Google Sheets Read Warning]:", err.message);
-    }
+  try {
+    const records = await submissionsCollection.find({}).sort({ updatedAt: -1 }).toArray();
+    return records;
+  } catch (err) {
+    console.error("[MongoDB Read Warning]:", err.message);
+    return [];
   }
-  return getLocalDb();
 };
 
 const deleteRowsFromGoogleSheet = async (
@@ -583,16 +560,11 @@ app.post("/api/upload", upload.single("photo"), (req, res) => {
 app.post("/api/submit", async (req, res) => {
   try {
     const formData = req.body;
-    const db = getLocalDb();
-
     let registrationId = formData.registrationId;
-    const existingIndex = registrationId
-      ? db.findIndex((r) => r.registrationId === registrationId)
-      : -1;
 
     // Generate NEW Registration ID if it's not explicitly an edit or if the registrationId is missing/invalid
     if (!formData.isEdit || !registrationId) {
-      registrationId = generateNextRegistrationId();
+      registrationId = await generateNextRegistrationId();
     }
 
     const submissionDate = new Date().toLocaleString("hi-IN", {
@@ -611,13 +583,16 @@ app.post("/api/submit", async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    // Save to Local DB
-    if (existingIndex >= 0 && formData.isEdit) {
-      db[existingIndex] = newRecord;
+    // Save to MongoDB
+    if (formData.isEdit && formData.registrationId) {
+      await submissionsCollection.updateOne(
+        { registrationId: formData.registrationId },
+        { $set: newRecord },
+        { upsert: true }
+      );
     } else {
-      db.unshift(newRecord);
+      await submissionsCollection.insertOne(newRecord);
     }
-    saveLocalDb(db);
 
     // Save to Google Sheets if credentials are present
     let googleSheetSaved = false;
@@ -787,9 +762,13 @@ app.delete("/api/records/:id", async (req, res) => {
       .status(404)
       .json({ success: false, message: "रिकॉर्ड नहीं मिला" });
 
-  let db = getLocalDb().filter(
-    (r) => r.registrationId !== record.registrationId,
-  );
+  try {
+    await submissionsCollection.deleteOne({ registrationId: record.registrationId });
+  } catch (err) {
+    console.error("[MongoDB Delete Error]:", err.message);
+    return res.status(500).json({ success: false, message: "डेटाबेस से रिकॉर्ड नहीं हटाया जा सका" });
+  }
+
   const gSheets = await getGoogleSheetsClient();
   if (gSheets && gSheets.sheets) {
     try {
@@ -809,18 +788,11 @@ app.delete("/api/records/:id", async (req, res) => {
       );
     } catch (err) {
       console.error("[Google Sheets Delete Warning]:", err.message);
-      return res
-        .status(500)
-        .json({
-          success: false,
-          message: "Google Sheet से रिकॉर्ड हटाया नहीं जा सका",
-        });
     }
   }
-  saveLocalDb(db);
   res.json({
     success: true,
-    message: "रिकॉर्ड Google Sheet और लोकल डेटा से स्थायी रूप से हटा दिया गया",
+    message: "रिकॉर्ड सफलतापूर्वक हटा दिया गया",
   });
 });
 
