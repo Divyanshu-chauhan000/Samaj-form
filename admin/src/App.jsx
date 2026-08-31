@@ -3,6 +3,7 @@ import AdminRecords from './components/AdminRecords';
 import DirectoryView from './components/DirectoryView';
 import DirectoryCard from './components/DirectoryCard';
 import { BookOpen, ShieldCheck, FileText, ArrowLeft } from 'lucide-react';
+import { FORM_URL } from './config.js';
 
 export default function App() {
   const [view, setView] = useState('records'); // 'records' | 'card' | 'all-cards'
@@ -40,7 +41,7 @@ export default function App() {
               </button>
             )}
             <a
-              href="http://localhost:3000"
+              href={FORM_URL}
               className="btn btn-secondary"
               style={{ color: '#FFF', textDecoration: 'none' }}
             >

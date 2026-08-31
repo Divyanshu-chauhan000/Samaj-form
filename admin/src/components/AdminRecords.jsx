@@ -8,6 +8,7 @@ import {
   Download,
   X,
 } from "lucide-react";
+import { API_BASE_URL } from "../config.js";
 
 export default function AdminRecords({
   onViewDirectoryCard,
@@ -21,7 +22,7 @@ export default function AdminRecords({
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/records");
+      const res = await fetch(`${API_BASE_URL}/api/records`);
       const data = await res.json();
       if (data.success) {
         setRecords(data.records);
@@ -44,7 +45,7 @@ export default function AdminRecords({
       return;
 
     try {
-      const res = await fetch(`/api/records/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE_URL}/api/records/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         fetchRecords();
@@ -109,7 +110,7 @@ export default function AdminRecords({
           </button>
 
           <a
-            href="/api/export/excel"
+            href={`${API_BASE_URL}/api/export/excel`}
             className="btn btn-secondary"
             style={{
               color: "#2e7d32",

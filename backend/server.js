@@ -17,8 +17,32 @@ app.set("trust proxy", 1);
 // Connect to MongoDB Atlas
 connectDB();
 
+// CORS Configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3002',
+  'http://localhost:5000',
+  'https://samaj-parichay-form.onrender.com',
+  'https://samaj-form-admin.onrender.com',
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_URL
+].filter(Boolean);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 

@@ -12,6 +12,7 @@ import {
   Camera,
   X,
 } from "lucide-react";
+import API_BASE_URL from "../config.js";
 
 const INITIAL_MEMBERS = Array.from({ length: 7 }, (_, i) => ({
   id: i + 1,
@@ -125,7 +126,7 @@ export default function PaperForm({
     setSearching(true);
     try {
       const res = await fetch(
-        `/api/records/${encodeURIComponent(searchRegId.trim())}`,
+        `${API_BASE_URL}/api/records/${encodeURIComponent(searchRegId.trim())}`,
       );
       const data = await res.json();
       if (data.success && data.record) {
@@ -252,7 +253,7 @@ export default function PaperForm({
 
     setUploading(true);
     try {
-      const res = await fetch("/api/upload", {
+      const res = await fetch(`${API_BASE_URL}/api/upload`, {
         method: "POST",
         body: data,
       });
@@ -326,7 +327,7 @@ export default function PaperForm({
         data.append("photo", file);
         setUploading(true);
         try {
-          const res = await fetch("/api/upload", {
+          const res = await fetch(`${API_BASE_URL}/api/upload`, {
             method: "POST",
             body: data,
           });
@@ -358,7 +359,7 @@ export default function PaperForm({
 
     setSigUploading(true);
     try {
-      const res = await fetch("/api/upload", {
+      const res = await fetch(`${API_BASE_URL}/api/upload`, {
         method: "POST",
         body: data,
       });
@@ -402,7 +403,7 @@ export default function PaperForm({
 
     setSaving(true);
     try {
-      const res = await fetch("/api/submit", {
+      const res = await fetch(`${API_BASE_URL}/api/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
