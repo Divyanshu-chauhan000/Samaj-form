@@ -17,7 +17,7 @@ const getRecordsFromGoogleSheets = async (sheets, spreadsheetId) => {
   const [familiesResult, membersResult] = await Promise.all([
     sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "Families!A2:Z",
+      range: "Families!A2:AB",
       valueRenderOption: "FORMULA",
     }),
     sheets.spreadsheets.values.get({
@@ -78,7 +78,8 @@ const getRecordsFromGoogleSheets = async (sheets, spreadsheetId) => {
         signatureUrl: extractUrl(row[24]),
         otherDetails: row[25] != null ? String(row[25]).trim() : "",
         members: membersByRegistrationId[regId] || [],
-        updatedAt: "",
+        createdAt: row[26] != null ? String(row[26]).trim() : row[1] || "",
+        updatedAt: row[27] != null ? String(row[27]).trim() : row[1] || "",
       };
     });
 };
@@ -131,9 +132,19 @@ const submitForm = async (req, res) => {
       registrationId = generateNextRegistrationId();
     }
 
-    const submissionDate = new Date().toLocaleString("hi-IN", {
+    const now = new Date();
+    const submissionDate = now.toLocaleString("en-IN", {
       timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
     });
+    const existingRecord = existingIndex >= 0 ? db[existingIndex] : null;
+    const createdAt = existingRecord?.createdAt || now.toISOString();
 
     const newRecord = {
       ...formData,
@@ -143,8 +154,9 @@ const submitForm = async (req, res) => {
         registrationId,
         id: Number(member.id) || index + 1,
       })),
-      submissionDate,
-      updatedAt: new Date().toISOString(),
+      submissionDate: existingRecord?.submissionDate || submissionDate,
+      createdAt,
+      updatedAt: now.toISOString(),
     };
 
     // 1. Save to MongoDB Atlas if connected
@@ -212,6 +224,8 @@ const submitForm = async (req, res) => {
             ? `=HYPERLINK("${formData.signatureUrl}", "हस्ताक्षर देखें")`
             : "",
           formData.otherDetails || "",
+          createdAt,
+          now.toISOString(),
         ];
 
         let existingRowIndex = -1;

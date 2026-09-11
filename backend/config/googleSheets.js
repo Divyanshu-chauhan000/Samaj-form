@@ -1,5 +1,15 @@
 const { google } = require("googleapis");
 
+const columnNumberToLetter = (columnNumber) => {
+  let column = "";
+  let number = columnNumber;
+  while (number > 0) {
+    const remainder = (number - 1) % 26;
+    column = String.fromCharCode(65 + remainder) + column;
+    number = Math.floor((number - 1) / 26);
+  }
+  return column;
+};
 const getGoogleSheetsClient = async () => {
   const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
   const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
@@ -81,6 +91,8 @@ const ensureSheetsHeaders = async (sheets, spreadsheetId) => {
       "Photo URL",
       "Signature URL",
       "Other Details",
+      "Created At",
+      "Latest Updated",
     ];
 
     const memberHeaders = [
@@ -95,6 +107,21 @@ const ensureSheetsHeaders = async (sheets, spreadsheetId) => {
       "Mobile Number",
     ];
 
+    const familyHeadersRange = await sheets.spreadsheets.values
+      .get({ spreadsheetId, range: "Families!A1:AB1" })
+      .catch(() => null);
+    const existingFamilyHeaders = familyHeadersRange?.data?.values?.[0] || [];
+    if (existingFamilyHeaders.length > 0) {
+      const headersToAdd = familyHeaders.slice(existingFamilyHeaders.length);
+      if (headersToAdd.length > 0) {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `Families!${columnNumberToLetter(existingFamilyHeaders.length + 1)}1`,
+          valueInputOption: "USER_ENTERED",
+          requestBody: { values: [headersToAdd] },
+        });
+      }
+    }
     const familiesVal = await sheets.spreadsheets.values
       .get({ spreadsheetId, range: "Families!A1:A1" })
       .catch(() => null);

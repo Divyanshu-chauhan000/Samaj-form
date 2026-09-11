@@ -9,6 +9,41 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+const formatDate = (value) => {
+  if (!value) return "—";
+  const text = String(value).trim();
+  const legacyMatch = text.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?$/i
+  );
+  let date;
+  if (legacyMatch) {
+    let hour = Number(legacyMatch[4]);
+    const meridiem = legacyMatch[7]?.toLowerCase();
+    if (meridiem === "pm" && hour < 12) hour += 12;
+    if (meridiem === "am" && hour === 12) hour = 0;
+    date = new Date(
+      Number(legacyMatch[3]),
+      Number(legacyMatch[2]) - 1,
+      Number(legacyMatch[1]),
+      hour,
+      Number(legacyMatch[5]),
+      Number(legacyMatch[6] || 0)
+    );
+  } else {
+    date = new Date(text);
+  }
+  if (Number.isNaN(date.getTime())) return text;
+  return date.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
 export default function AdminRecords({
   onViewRecord,
   onEditRecord,
@@ -152,7 +187,8 @@ export default function AdminRecords({
               <th>गौत्र</th>
               <th>मोबाइल नंबर</th>
               <th>सदस्य संख्या</th>
-              <th>दिनांक</th>
+              <th>Created</th>
+              <th>Latest Update</th>
               <th style={{ textAlign: "center" }}>कार्रवाई (Actions)</th>
             </tr>
           </thead>
@@ -168,7 +204,8 @@ export default function AdminRecords({
                 <td>
                   {rec.members ? rec.members.filter((m) => m.name).length : 0}
                 </td>
-                <td>{rec.submissionDate || "—"}</td>
+                <td>{formatDate(rec.createdAt || rec.submissionDate)}</td>
+                <td>{formatDate(rec.updatedAt || rec.createdAt || rec.submissionDate)}</td>
                 <td style={{ textAlign: "center" }}>
                   <div
                     style={{
