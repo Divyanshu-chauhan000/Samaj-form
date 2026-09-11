@@ -13,7 +13,7 @@ const formatDate = (value) => {
   if (!value) return "—";
   const text = String(value).trim();
   const legacyMatch = text.match(
-    /^(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?$/i
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?$/i,
   );
   let date;
   if (legacyMatch) {
@@ -27,7 +27,7 @@ const formatDate = (value) => {
       Number(legacyMatch[1]),
       hour,
       Number(legacyMatch[5]),
-      Number(legacyMatch[6] || 0)
+      Number(legacyMatch[6] || 0),
     );
   } else {
     date = new Date(text);
@@ -94,10 +94,13 @@ export default function AdminRecords({
   const filteredRecords = records.filter((r) => {
     const term = searchTerm.toLowerCase().trim();
     if (!term) return true;
-    const memberMatch = Array.isArray(r.members) && r.members.some(m => 
-      (m.name && m.name.toLowerCase().includes(term)) ||
-      (m.mobile && String(m.mobile).includes(term))
-    );
+    const memberMatch =
+      Array.isArray(r.members) &&
+      r.members.some(
+        (m) =>
+          (m.name && m.name.toLowerCase().includes(term)) ||
+          (m.mobile && String(m.mobile).includes(term)),
+      );
     return (
       (r.registrationId && r.registrationId.toLowerCase().includes(term)) ||
       (r.headName && r.headName.toLowerCase().includes(term)) ||
@@ -205,7 +208,11 @@ export default function AdminRecords({
                   {rec.members ? rec.members.filter((m) => m.name).length : 0}
                 </td>
                 <td>{formatDate(rec.createdAt || rec.submissionDate)}</td>
-                <td>{formatDate(rec.updatedAt || rec.createdAt || rec.submissionDate)}</td>
+                <td>
+                  {formatDate(
+                    rec.updatedAt || rec.createdAt || rec.submissionDate,
+                  )}
+                </td>
                 <td style={{ textAlign: "center" }}>
                   <div
                     style={{

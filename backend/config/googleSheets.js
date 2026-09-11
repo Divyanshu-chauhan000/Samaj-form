@@ -165,11 +165,11 @@ const deleteRowsFromGoogleSheet = async (
   spreadsheetId,
   sheetName,
   lastColumn,
-  registrationId
+  registrationId,
 ) => {
   const metadata = await sheets.spreadsheets.get({ spreadsheetId });
   const sheet = metadata.data.sheets.find(
-    (item) => item.properties.title === sheetName
+    (item) => item.properties.title === sheetName,
   );
   if (!sheet) return;
 

@@ -88,7 +88,9 @@ const getAvailableRecords = async () => {
   // 1. Try MongoDB Atlas First
   if (mongoose.connection.readyState === 1) {
     try {
-      const mongoRecords = await Submission.find().sort({ createdAt: -1 }).lean();
+      const mongoRecords = await Submission.find()
+        .sort({ createdAt: -1 })
+        .lean();
       if (mongoRecords && mongoRecords.length > 0) {
         saveLocalDb(mongoRecords);
         return mongoRecords;
@@ -104,7 +106,7 @@ const getAvailableRecords = async () => {
     try {
       const records = await getRecordsFromGoogleSheets(
         gSheets.sheets,
-        gSheets.spreadsheetId
+        gSheets.spreadsheetId,
       );
       saveLocalDb(records);
       return records;
@@ -163,11 +165,10 @@ const submitForm = async (req, res) => {
     let mongoSaved = false;
     if (mongoose.connection.readyState === 1) {
       try {
-        await Submission.findOneAndUpdate(
-          { registrationId },
-          newRecord,
-          { upsert: true, new: true }
-        );
+        await Submission.findOneAndUpdate({ registrationId }, newRecord, {
+          upsert: true,
+          new: true,
+        });
         mongoSaved = true;
       } catch (mErr) {
         console.error("[MongoDB Save Warning]:", mErr.message);
@@ -277,7 +278,7 @@ const submitForm = async (req, res) => {
                 spreadsheetId,
                 "Family Members",
                 "I",
-                registrationId
+                registrationId,
               );
             }
             await sheets.spreadsheets.values.append({
@@ -353,7 +354,7 @@ const deleteRecord = async (req, res) => {
   }
 
   let db = getLocalDb().filter(
-    (r) => r.registrationId !== record.registrationId
+    (r) => r.registrationId !== record.registrationId,
   );
   const gSheets = await getGoogleSheetsClient();
   if (gSheets && gSheets.sheets) {
@@ -363,14 +364,14 @@ const deleteRecord = async (req, res) => {
         gSheets.spreadsheetId,
         "Families",
         "Z",
-        record.registrationId
+        record.registrationId,
       );
       await deleteRowsFromGoogleSheet(
         gSheets.sheets,
         gSheets.spreadsheetId,
         "Family Members",
         "I",
-        record.registrationId
+        record.registrationId,
       );
     } catch (err) {
       console.error("[Google Sheets Delete Warning]:", err.message);
