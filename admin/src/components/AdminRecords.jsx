@@ -34,7 +34,7 @@ const formatDate = (value) => {
     date = new Date(text);
   }
   if (Number.isNaN(date.getTime())) return text;
-  return date.toLocaleString("en-IN", {
+  const parts = new Intl.DateTimeFormat("en-IN", {
     timeZone: "Asia/Kolkata",
     day: "2-digit",
     month: "2-digit",
@@ -42,7 +42,10 @@ const formatDate = (value) => {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
-  });
+  }).formatToParts(date);
+  const getPart = (type) =>
+    parts.find((part) => part.type === type)?.value || "";
+  return `${getPart("day")}/${getPart("month")}/${getPart("year")}, ${getPart("hour")}:${getPart("minute")} ${getPart("dayPeriod").toUpperCase()}`;
 };
 
 export default function AdminRecords({

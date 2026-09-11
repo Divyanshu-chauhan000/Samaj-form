@@ -13,6 +13,22 @@ const {
 const Submission = require("../models/Submission");
 const mongoose = require("mongoose");
 
+const formatTimestamp = (date) =>
+  new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  })
+    .formatToParts(date)
+    .reduce((result, part) => {
+      result[part.type] = part.value;
+      return result;
+    }, {});
+
 const getRecordsFromGoogleSheets = async (sheets, spreadsheetId) => {
   const [familiesResult, membersResult] = await Promise.all([
     sheets.spreadsheets.values.get({
@@ -135,16 +151,8 @@ const submitForm = async (req, res) => {
     }
 
     const now = new Date();
-    const submissionDate = now.toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    });
+    const timestampParts = formatTimestamp(now);
+    const submissionDate = `${timestampParts.day}/${timestampParts.month}/${timestampParts.year}, ${timestampParts.hour}:${timestampParts.minute} ${timestampParts.dayPeriod.toUpperCase()}`;
     const existingRecord = existingIndex >= 0 ? db[existingIndex] : null;
     const createdAt = existingRecord?.createdAt || now.toISOString();
 
