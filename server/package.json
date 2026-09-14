@@ -1,17 +1,12 @@
 {
-  "name": "samaj-parichay-form",
+  "name": "samaj-parichay-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend server for Samaj Parichay Form application",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch backend/server.js",
-    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend && npm install --prefix admin && npm run build --prefix admin"
+    "dev": "node --watch server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
@@ -19,7 +14,7 @@
     "express": "^5.2.1",
     "google-auth-library": "^11.0.2",
     "googleapis": "^176.0.0",
-    "mongoose": "^8.24.4",
+    "mongoose": "^8.9.0",
     "multer": "^2.2.0",
     "multer-storage-cloudinary": "^4.0.0"
   }
