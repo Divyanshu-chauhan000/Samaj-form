@@ -51,13 +51,20 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 // Static routes
 app.use("/uploads", express.static(uploadsDir));
+app.use("/admin", express.static(path.join(__dirname, "..", "admin", "dist")));
 app.use(express.static(path.join(__dirname, "..", "frontend", "dist")));
 
 // API Routes
 app.use("/api", apiRoutes);
 
+// Catch-all route to serve Admin SPA for /admin paths
+app.get(/^\/admin/, (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "admin", "dist", "index.html"));
+});
+
 // Catch-all route to serve SPA frontend for any unknown path
-app.get("{*path}", (req, res) => {
+app.get(/(.*)/, (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
   res.sendFile(path.join(__dirname, "..", "frontend", "dist", "index.html"));
 });
 
