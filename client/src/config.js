@@ -5,6 +5,6 @@ const API_BASE_URL =
   (typeof window !== "undefined" &&
   window.location.origin === "http://localhost:3000"
     ? "http://localhost:5000"
-    : "https://samaj-parichay-form.onrender.com");
+    : "https://kumawat-samaj-backend.onrender.com");
 
 export default API_BASE_URL;
