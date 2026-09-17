@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
-    "lucide-react": "^1.32.0"
+    "lucide-react": "^1.32.0",
+    "react-select": "^5.10.2"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

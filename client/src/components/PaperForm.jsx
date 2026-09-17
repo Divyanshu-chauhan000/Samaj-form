@@ -12,6 +12,7 @@ import {
   Camera,
   X,
 } from "lucide-react";
+import CreatableSelect from "react-select/creatable";
 import API_BASE_URL from "../config.js";
 
 const INITIAL_MEMBERS = Array.from({ length: 7 }, (_, i) => ({
@@ -33,6 +34,13 @@ const VILLAGE_OPTIONS = [
   "देवली कला",
   "मोहरा कला",
   "रायपुर",
+];
+
+const COMMON_GOTRAS = [
+  "अजमेरा", "देवड़ा", "चौहान", "सोलंकी", "भाटी", "राठौड़", "गहलोत", 
+  "परमार", "टांक", "बड़गुर्जर", "गोयल", "सांखला", "कच्छवा", "पँवार", 
+  "तंवर", "सिसोदिया", "मण्डोवरा", "सिरोहीवाल", "वालिया", "कुमावत", 
+  "मारवाल", "खोरवाल", "जलवाल", "आत्रेय", "कश्यप", "भारद्वाज", "शांडिल्य", "व्यास"
 ];
 
 export default function PaperForm({
@@ -174,39 +182,92 @@ export default function PaperForm({
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const [successInfo, setSuccessInfo] = useState(null);
-  const [gotraSuggestions, setGotraSuggestions] = useState(() => {
-    try {
-      return JSON.parse(
-        localStorage.getItem("samaj-gotra-suggestions") || "[]",
-      );
-    } catch {
-      return [];
-    }
-  });
+  const gotraOptions = COMMON_GOTRAS.map(
+    (g) => ({ value: g, label: g })
+  );
+  
+  const districtSelectOptions = DISTRICT_OPTIONS.map((d) => ({ value: d, label: d }));
+  const tehsilSelectOptions = TEHSIL_OPTIONS.map((t) => ({ value: t, label: t }));
+  const villageSelectOptions = VILLAGE_OPTIONS.map((v) => ({ value: v, label: v }));
 
-  // Input Change Handlers
+  const selectStyles = {
+    container: (base) => ({
+      ...base,
+      flex: 1,
+      width: "100%",
+      minWidth: "100px",
+    }),
+    control: (base) => ({
+      ...base,
+      minHeight: "24px",
+      height: "24px",
+      border: "none",
+      background: "transparent",
+      boxShadow: "none",
+      borderRadius: 0,
+      fontSize: "10pt",
+      fontWeight: "600",
+      fontFamily: "'Noto Sans Devanagari', sans-serif",
+      cursor: "text",
+      "&:hover": { border: "none" },
+    }),
+    valueContainer: (base) => ({ 
+      ...base, 
+      padding: "0",
+      margin: 0,
+      minHeight: "24px",
+    }),
+    input: (base) => ({ 
+      ...base, 
+      margin: 0, 
+      padding: 0,
+      color: "#000"
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#000",
+      margin: 0,
+    }),
+    indicatorsContainer: (base) => ({
+      ...base,
+      height: "24px",
+    }),
+    dropdownIndicator: (base) => ({ 
+      ...base, 
+      padding: "0 2px",
+      color: "#666",
+      "&:hover": { color: "#000" }
+    }),
+    clearIndicator: (base) => ({
+      ...base,
+      padding: "0 2px",
+    }),
+    menu: (base) => ({
+      ...base,
+      zIndex: 9999,
+      fontFamily: "'Noto Sans Devanagari', sans-serif",
+      fontSize: "10pt",
+      minWidth: "140px",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#aaa",
+      fontWeight: "normal",
+      fontStyle: "italic",
+      fontSize: "8.5pt",
+    })
+  };
+
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (
-      [
-        "headVillage",
-        "fatherGotra",
-        "motherGotra",
-        "wifeVillage",
-        "fatherInLawVillage",
-        "motherInLawVillage",
-      ].includes(field)
-    ) {
-      const gotra = value.trim();
-      if (gotra && !gotraSuggestions.includes(gotra)) {
-        const updatedSuggestions = [...gotraSuggestions, gotra];
-        setGotraSuggestions(updatedSuggestions);
-        localStorage.setItem(
-          "samaj-gotra-suggestions",
-          JSON.stringify(updatedSuggestions),
-        );
-      }
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: null }));
     }
+  };
+
+  const handleCreateGotra = (field, gotra) => {
+    const trimmed = gotra.trim();
+    setFormData((prev) => ({ ...prev, [field]: trimmed }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: null }));
     }
@@ -618,15 +679,15 @@ export default function PaperForm({
                 <div className="field-group">
                   <span className="field-label">गौत्र -</span>
                   <div className="field-input-wrapper">
-                    <input
-                      type="text"
-                      className="field-input"
-                      list="gotra-suggestions"
-                      value={formData.headVillage}
-                      onChange={(e) =>
-                        handleInputChange("headVillage", e.target.value)
-                      }
+                    <CreatableSelect
+                      options={gotraOptions}
+                      styles={selectStyles}
                       placeholder="गौत्र..."
+                      value={formData.headVillage ? { label: formData.headVillage, value: formData.headVillage } : null}
+                      onChange={(selected) => handleCreateGotra("headVillage", selected ? selected.value : "")}
+                      onCreateOption={(val) => handleCreateGotra("headVillage", val)}
+                      isClearable
+                      formatCreateLabel={(val) => `नया जोड़ें: "${val}"`}
                     />
                   </div>
                 </div>
@@ -705,14 +766,15 @@ export default function PaperForm({
                 <div className="field-group">
                   <span className="field-label">गौत्र -</span>
                   <div className="field-input-wrapper">
-                    <input
-                      type="text"
-                      className="field-input"
-                      list="gotra-suggestions"
-                      value={formData.fatherGotra || ""}
-                      onChange={(e) =>
-                        handleInputChange("fatherGotra", e.target.value)
-                      }
+                    <CreatableSelect
+                      options={gotraOptions}
+                      styles={selectStyles}
+                      placeholder=""
+                      value={formData.fatherGotra ? { label: formData.fatherGotra, value: formData.fatherGotra } : null}
+                      onChange={(selected) => handleCreateGotra("fatherGotra", selected ? selected.value : "")}
+                      onCreateOption={(val) => handleCreateGotra("fatherGotra", val)}
+                      isClearable
+                      formatCreateLabel={(val) => `नया जोड़ें: "${val}"`}
                     />
                   </div>
                 </div>
@@ -736,14 +798,15 @@ export default function PaperForm({
                 <div className="field-group">
                   <span className="field-label">गौत्र -</span>
                   <div className="field-input-wrapper">
-                    <input
-                      type="text"
-                      className="field-input"
-                      list="gotra-suggestions"
-                      value={formData.motherGotra || ""}
-                      onChange={(e) =>
-                        handleInputChange("motherGotra", e.target.value)
-                      }
+                    <CreatableSelect
+                      options={gotraOptions}
+                      styles={selectStyles}
+                      placeholder=""
+                      value={formData.motherGotra ? { label: formData.motherGotra, value: formData.motherGotra } : null}
+                      onChange={(selected) => handleCreateGotra("motherGotra", selected ? selected.value : "")}
+                      onCreateOption={(val) => handleCreateGotra("motherGotra", val)}
+                      isClearable
+                      formatCreateLabel={(val) => `नया जोड़ें: "${val}"`}
                     />
                   </div>
                 </div>
@@ -874,14 +937,15 @@ export default function PaperForm({
               <div className="form-inline-group">
                 <span className="field-label label-nowrap">गौत्र -</span>
                 <div className="field-input-wrapper input-sm">
-                  <input
-                    type="text"
-                    className="field-input"
-                    list="gotra-suggestions"
-                    value={formData.wifeVillage}
-                    onChange={(e) =>
-                      handleInputChange("wifeVillage", e.target.value)
-                    }
+                  <CreatableSelect
+                    options={gotraOptions}
+                    styles={selectStyles}
+                    placeholder=""
+                    value={formData.wifeVillage ? { label: formData.wifeVillage, value: formData.wifeVillage } : null}
+                    onChange={(selected) => handleCreateGotra("wifeVillage", selected ? selected.value : "")}
+                    onCreateOption={(val) => handleCreateGotra("wifeVillage", val)}
+                    isClearable
+                    formatCreateLabel={(val) => `नया जोड़ें: "${val}"`}
                   />
                 </div>
                 <span className="field-label label-nowrap">आयु -</span>
@@ -929,14 +993,15 @@ export default function PaperForm({
               <div className="field-group">
                 <span className="field-label">गौत्र -</span>
                 <div className="field-input-wrapper">
-                  <input
-                    type="text"
-                    className="field-input"
-                    list="gotra-suggestions"
-                    value={formData.fatherInLawVillage}
-                    onChange={(e) =>
-                      handleInputChange("fatherInLawVillage", e.target.value)
-                    }
+                  <CreatableSelect
+                    options={gotraOptions}
+                    styles={selectStyles}
+                    placeholder=""
+                    value={formData.fatherInLawVillage ? { label: formData.fatherInLawVillage, value: formData.fatherInLawVillage } : null}
+                    onChange={(selected) => handleCreateGotra("fatherInLawVillage", selected ? selected.value : "")}
+                    onCreateOption={(val) => handleCreateGotra("fatherInLawVillage", val)}
+                    isClearable
+                    formatCreateLabel={(val) => `नया जोड़ें: "${val}"`}
                   />
                 </div>
               </div>
@@ -962,14 +1027,15 @@ export default function PaperForm({
               <div className="field-group">
                 <span className="field-label">गौत्र -</span>
                 <div className="field-input-wrapper">
-                  <input
-                    type="text"
-                    className="field-input"
-                    list="gotra-suggestions"
-                    value={formData.motherInLawVillage}
-                    onChange={(e) =>
-                      handleInputChange("motherInLawVillage", e.target.value)
-                    }
+                  <CreatableSelect
+                    options={gotraOptions}
+                    styles={selectStyles}
+                    placeholder=""
+                    value={formData.motherInLawVillage ? { label: formData.motherInLawVillage, value: formData.motherInLawVillage } : null}
+                    onChange={(selected) => handleCreateGotra("motherInLawVillage", selected ? selected.value : "")}
+                    onCreateOption={(val) => handleCreateGotra("motherInLawVillage", val)}
+                    isClearable
+                    formatCreateLabel={(val) => `नया जोड़ें: "${val}"`}
                   />
                 </div>
               </div>
@@ -1015,45 +1081,40 @@ export default function PaperForm({
                 <div className="field-group" key={field}>
                   <span className="field-label">{label} -</span>
                   <div className="field-input-wrapper">
-                    <input
-                      type="text"
-                      className="field-input"
-                      list={
-                        field === "permanentVillage"
-                          ? "village-options"
-                          : field === "permanentTehsil"
-                            ? "tehsil-options"
-                            : "district-options"
-                      }
-                      value={formData[field]}
-                      onChange={(e) => handleInputChange(field, e.target.value)}
-                    />
+                    {field === "permanentBera" ? (
+                      <input
+                        type="text"
+                        className="field-input"
+                        autoComplete="off"
+                        value={formData[field]}
+                        onChange={(e) => handleInputChange(field, e.target.value)}
+                      />
+                    ) : (
+                      <CreatableSelect
+                        options={
+                          field === "permanentVillage"
+                            ? villageSelectOptions
+                            : field === "permanentTehsil"
+                              ? tehsilSelectOptions
+                              : districtSelectOptions
+                        }
+                        styles={selectStyles}
+                        placeholder=""
+                        value={formData[field] ? { label: formData[field], value: formData[field] } : null}
+                        onChange={(selected) => handleInputChange(field, selected ? selected.value : "")}
+                        onCreateOption={(val) => handleInputChange(field, val)}
+                        isClearable
+                        formatCreateLabel={(val) => `नया जोड़ें: "${val}"`}
+                      />
+                    )}
                   </div>
                 </div>
               ))}
             </div>
 
-            <datalist id="village-options">
-              {VILLAGE_OPTIONS.map((village) => (
-                <option value={village} key={village} />
-              ))}
-            </datalist>
-            <datalist id="tehsil-options">
-              {TEHSIL_OPTIONS.map((tehsil) => (
-                <option value={tehsil} key={tehsil} />
-              ))}
-            </datalist>
-            <datalist id="district-options">
-              {DISTRICT_OPTIONS.map((district) => (
-                <option value={district} key={district} />
-              ))}
-            </datalist>
+            {/* Removed the datalists since CreatableSelect is used now */}
 
-            <datalist id="gotra-suggestions">
-              {gotraSuggestions.map((gotra) => (
-                <option value={gotra} key={gotra} />
-              ))}
-            </datalist>
+            {/* Gotra Datalist Removed as we are using CreatableSelect */}
 
             {/* Row 10: Occupation 1 & 2 */}
             <div className="occupation-wrapper">
