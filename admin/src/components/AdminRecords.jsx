@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Search,
-  Eye,
-  Trash2,
-  RefreshCw,  
-  FileText,
-  Download,
-  X,
-} from "lucide-react";
+import { Search, Eye, Trash2, RefreshCw, FileText, X } from "lucide-react";
 import { API_BASE_URL } from "../config.js";
 
 const formatDate = (value) => {
@@ -148,23 +140,6 @@ export default function AdminRecords({
           >
             <RefreshCw size={16} /> रिफ्रेश
           </button>
-
-          <a
-            href={`${API_BASE_URL}/api/export/excel`}
-            className="btn btn-secondary"
-            style={{
-              color: "#2e7d32",
-              borderColor: "#2e7d32",
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              fontWeight: "600",
-            }}
-            title="A-Z सभी डेटा एक्सेल शीट (.csv) में डाउनलोड करें"
-          >
-            <Download size={16} /> एक्सेल एक्सपोर्ट (A-Z Data CSV)
-          </a>
 
           <button
             className="btn btn-primary"

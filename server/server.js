@@ -3,6 +3,11 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 require("dotenv").config();
+const dns = require('dns');
+dns.setServers([
+  '8.8.8.8',
+  '8.8.4.4'
+])
 
 const connectDB = require("./config/db");
 const apiRoutes = require("./routes/apiRoutes");

@@ -139,6 +139,58 @@ const getAvailableRecords = async () => {
   return getLocalDb();
 };
 
+const getRegistrationNumber = (registrationId) => {
+  if (!registrationId || !String(registrationId).startsWith("KSP-2026-")) {
+    return 0;
+  }
+
+  const number = Number(String(registrationId).split("-").pop());
+  return Number.isInteger(number) ? number : 0;
+};
+
+const generateRegistrationId = async (localRecords) => {
+  let maxNumber = localRecords.reduce(
+    (max, record) =>
+      Math.max(max, getRegistrationNumber(record.registrationId)),
+    0,
+  );
+
+  if (mongoose.connection.readyState === 1) {
+    try {
+      const mongoRecords = await Submission.find(
+        {},
+        { registrationId: 1, _id: 0 },
+      ).lean();
+      maxNumber = mongoRecords.reduce(
+        (max, record) =>
+          Math.max(max, getRegistrationNumber(record.registrationId)),
+        maxNumber,
+      );
+
+      const counters = mongoose.connection.db.collection("counters");
+      await counters.updateOne(
+        { _id: "registration" },
+        { $max: { seq: maxNumber } },
+        { upsert: true },
+      );
+      const result = await counters.findOneAndUpdate(
+        { _id: "registration" },
+        { $inc: { seq: 1 } },
+        { returnDocument: "after", upsert: true },
+      );
+      const nextNumber = result?.value?.seq ?? result?.seq;
+
+      if (Number.isInteger(nextNumber)) {
+        return `KSP-2026-${String(nextNumber).padStart(5, "0")}`;
+      }
+    } catch (mErr) {
+      console.error("[MongoDB Counter Warning]:", mErr.message);
+    }
+  }
+
+  return generateNextRegistrationId();
+};
+
 // Submit / Save Form Handler
 const submitForm = async (req, res) => {
   try {
@@ -149,15 +201,31 @@ const submitForm = async (req, res) => {
     const existingIndex = registrationId
       ? db.findIndex((r) => r.registrationId === registrationId)
       : -1;
+    let existingRecord = existingIndex >= 0 ? db[existingIndex] : null;
+
+    if (
+      formData.isEdit &&
+      registrationId &&
+      !existingRecord &&
+      mongoose.connection.readyState === 1
+    ) {
+      existingRecord = await Submission.findOne({ registrationId }).lean();
+    }
+
+    if (formData.isEdit && registrationId && !existingRecord) {
+      return res.status(404).json({
+        success: false,
+        message: `Registration ID ${registrationId} का रिकॉर्ड नहीं मिला।`,
+      });
+    }
 
     if (!formData.isEdit || !registrationId) {
-      registrationId = generateNextRegistrationId();
+      registrationId = await generateRegistrationId(db);
     }
 
     const now = new Date();
     const timestampParts = formatTimestamp(now);
     const submissionDate = `${timestampParts.day}/${timestampParts.month}/${timestampParts.year}, ${timestampParts.hour}:${timestampParts.minute} ${timestampParts.dayPeriod.toUpperCase()}`;
-    const existingRecord = existingIndex >= 0 ? db[existingIndex] : null;
     const createdAt = existingRecord?.createdAt || now.toISOString();
 
     const newRecord = {
@@ -188,8 +256,11 @@ const submitForm = async (req, res) => {
     }
 
     // 2. Save to Local JSON DB
-    if (existingIndex >= 0 && formData.isEdit) {
-      db[existingIndex] = newRecord;
+    const localRecordIndex = db.findIndex(
+      (record) => record.registrationId === registrationId,
+    );
+    if (localRecordIndex >= 0) {
+      db[localRecordIndex] = newRecord;
     } else {
       db.unshift(newRecord);
     }
@@ -252,7 +323,9 @@ const submitForm = async (req, res) => {
             range: "Families!A2:A",
           });
           const rows = res.data.values || [];
-          existingRowIndex = rows.findIndex((row) => row[0] === registrationId);
+          existingRowIndex = rows.findIndex(
+            (row) => String(row[0] || "").trim() === registrationId,
+          );
         } catch (e) {}
 
         if (existingRowIndex >= 0) {
@@ -272,38 +345,37 @@ const submitForm = async (req, res) => {
           });
         }
 
-        if (formData.members && formData.members.length > 0) {
-          const memberRows = formData.members
-            .filter((m) => m.name && m.name.trim() !== "")
-            .map((m, index) => [
-              registrationId,
-              m.id || index + 1,
-              m.name || "",
-              m.age || "",
-              m.relation || "",
-              m.education || "",
-              m.occupation || "",
-              m.maritalStatus || "",
-              m.mobile || "",
-            ]);
+        const memberRows = (formData.members || [])
+          .filter((m) => m.name && m.name.trim() !== "")
+          .map((m, index) => [
+            registrationId,
+            m.id || index + 1,
+            m.name || "",
+            m.age || "",
+            m.relation || "",
+            m.education || "",
+            m.occupation || "",
+            m.maritalStatus || "",
+            m.mobile || "",
+          ]);
 
-          if (memberRows.length > 0) {
-            if (formData.isEdit) {
-              await deleteRowsFromGoogleSheet(
-                sheets,
-                spreadsheetId,
-                "Family Members",
-                "I",
-                registrationId,
-              );
-            }
-            await sheets.spreadsheets.values.append({
-              spreadsheetId,
-              range: "'Family Members'!A2",
-              valueInputOption: "USER_ENTERED",
-              requestBody: { values: memberRows },
-            });
-          }
+        if (formData.isEdit) {
+          await deleteRowsFromGoogleSheet(
+            sheets,
+            spreadsheetId,
+            "Family Members",
+            "I",
+            registrationId,
+          );
+        }
+
+        if (memberRows.length > 0) {
+          await sheets.spreadsheets.values.append({
+            spreadsheetId,
+            range: "'Family Members'!A2",
+            valueInputOption: "USER_ENTERED",
+            requestBody: { values: memberRows },
+          });
         }
         googleSheetSaved = true;
       } catch (gErr) {

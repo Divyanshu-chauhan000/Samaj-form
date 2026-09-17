@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import AdminRecords from "./components/AdminRecords";
 import DirectoryView from "./components/DirectoryView";
 import DirectoryCard from "./components/DirectoryCard";
-import { BookOpen, ShieldCheck, FileText, ArrowLeft } from "lucide-react";
-import { FORM_URL } from "./config.js";
+import { BookOpen, ArrowLeft, Download } from "lucide-react";
+import { API_BASE_URL } from "./config.js";
 
 export default function App() {
   const [view, setView] = useState("records"); // 'records' | 'card' | 'all-cards'
@@ -56,11 +56,20 @@ export default function App() {
               </button>
             )}
             <a
-              href={FORM_URL}
+              href={`${API_BASE_URL}/api/export/excel`}
               className="btn btn-secondary"
-              style={{ color: "#FFF", textDecoration: "none" }}
+              style={{
+                color: "#2e7d32",
+                borderColor: "#2e7d32",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                fontWeight: "600",
+              }}
+              title="A-Z सभी डेटा एक्सेल शीट (.csv) में डाउनलोड करें"
             >
-              <FileText size={18} /> फ़ॉर्म पर जाएँ (User Form)
+              <Download size={18} /> एक्सेल एक्सपोर्ट (A-Z Data CSV)
             </a>
           </div>
         </div>

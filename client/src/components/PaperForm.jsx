@@ -76,54 +76,6 @@ export default function PaperForm({
 
   const [formData, setFormData] = useState(() => getInitialState(initialData));
 
-  const handleResetNewForm = () => {
-    setFormData({
-      registrationId: "",
-      isEdit: false,
-      headName: "",
-      headAge: "",
-      headEducation: "",
-      fatherName: "",
-      fatherGotra: "",
-      motherName: "",
-      motherGotra: "",
-      wifeName: "",
-      wifeAge: "",
-      wifeEducation: "",
-      wifeVillage: "",
-      fatherInLawName: "",
-      fatherInLawVillage: "",
-      motherInLawName: "",
-      motherInLawVillage: "",
-      headVillage: "",
-      mobileNumber: "",
-      currentAddress: "",
-      permanentAddress: "",
-      permanentBera: "",
-      permanentVillage: "",
-      permanentTehsil: "",
-      permanentDistrict: "",
-      occupation1: "",
-      occupation2: "",
-      photoUrl: "",
-      signatureUrl: "",
-      otherDetails: "",
-      members: Array.from({ length: 7 }, (_, i) => ({
-        id: i + 1,
-        name: "",
-        age: "",
-        relation: "",
-        education: "",
-        occupation: "",
-        maritalStatus: "",
-        mobile: "",
-      })),
-    });
-    setSuccessInfo(null);
-    setErrors({});
-    setSearchRegId("");
-  };
-
   const handleSearchAndLoadRecord = async () => {
     if (!searchRegId.trim()) {
       alert(
@@ -559,9 +511,6 @@ export default function PaperForm({
               onClick={() => setSuccessInfo(null)}
             >
               इसी फॉर्म में सुधार करें
-            </button>
-            <button className="btn btn-success" onClick={handleResetNewForm}>
-              <Plus size={16} /> नया फॉर्म भरें (New Registration)
             </button>
           </div>
         </div>
@@ -1394,14 +1343,6 @@ export default function PaperForm({
         >
           <Save size={18} />{" "}
           {saving ? "सहेजा जा रहा है..." : "फॉर्म सबमिट करें (Save)"}
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          style={{ color: "#555" }}
-          onClick={handleResetNewForm}
-        >
-          <Plus size={16} /> रिसेट / नया फॉर्म
         </button>
         <button type="button" className="btn btn-primary" onClick={handlePrint}>
           <Printer size={18} /> प्रिंट करें (Print / PDF)
