@@ -33,7 +33,7 @@ const getRecordsFromGoogleSheets = async (sheets, spreadsheetId) => {
   const [familiesResult, membersResult] = await Promise.all([
     sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "Families!A2:AB",
+      range: "Families!A2:AF",
       valueRenderOption: "FORMULA",
     }),
     sheets.spreadsheets.values.get({
@@ -96,6 +96,10 @@ const getRecordsFromGoogleSheets = async (sheets, spreadsheetId) => {
         members: membersByRegistrationId[regId] || [],
         createdAt: row[26] != null ? String(row[26]).trim() : row[1] || "",
         updatedAt: row[27] != null ? String(row[27]).trim() : row[1] || "",
+        permanentBera: row[28] != null ? String(row[28]).trim() : "",
+        permanentVillage: row[29] != null ? String(row[29]).trim() : "",
+        permanentTehsil: row[30] != null ? String(row[30]).trim() : "",
+        permanentDistrict: row[31] != null ? String(row[31]).trim() : "",
       };
     });
 };
@@ -235,6 +239,10 @@ const submitForm = async (req, res) => {
           formData.otherDetails || "",
           createdAt,
           now.toISOString(),
+          formData.permanentBera || "",
+          formData.permanentVillage || "",
+          formData.permanentTehsil || "",
+          formData.permanentDistrict || "",
         ];
 
         let existingRowIndex = -1;

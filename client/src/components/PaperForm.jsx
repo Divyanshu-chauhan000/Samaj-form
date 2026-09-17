@@ -62,6 +62,10 @@ export default function PaperForm({
     mobileNumber: data?.mobileNumber || "",
     currentAddress: data?.currentAddress || "",
     permanentAddress: data?.permanentAddress || "",
+    permanentBera: data?.permanentBera || "",
+    permanentVillage: data?.permanentVillage || "",
+    permanentTehsil: data?.permanentTehsil || "",
+    permanentDistrict: data?.permanentDistrict || "",
     occupation1: data?.occupation1 || "",
     occupation2: data?.occupation2 || "",
     photoUrl: data?.photoUrl || "",
@@ -95,6 +99,10 @@ export default function PaperForm({
       mobileNumber: "",
       currentAddress: "",
       permanentAddress: "",
+      permanentBera: "",
+      permanentVillage: "",
+      permanentTehsil: "",
+      permanentDistrict: "",
       occupation1: "",
       occupation2: "",
       photoUrl: "",
@@ -173,6 +181,10 @@ export default function PaperForm({
           mobileNumber: rec.mobileNumber || "",
           currentAddress: rec.currentAddress || "",
           permanentAddress: rec.permanentAddress || "",
+          permanentBera: rec.permanentBera || "",
+          permanentVillage: rec.permanentVillage || "",
+          permanentTehsil: rec.permanentTehsil || "",
+          permanentDistrict: rec.permanentDistrict || "",
           occupation1: rec.occupation1 || "",
           occupation2: rec.occupation2 || "",
           photoUrl: rec.photoUrl || "",
@@ -200,10 +212,39 @@ export default function PaperForm({
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const [successInfo, setSuccessInfo] = useState(null);
+  const [gotraSuggestions, setGotraSuggestions] = useState(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("samaj-gotra-suggestions") || "[]",
+      );
+    } catch {
+      return [];
+    }
+  });
 
   // Input Change Handlers
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (
+      [
+        "headVillage",
+        "fatherGotra",
+        "motherGotra",
+        "wifeVillage",
+        "fatherInLawVillage",
+        "motherInLawVillage",
+      ].includes(field)
+    ) {
+      const gotra = value.trim();
+      if (gotra && !gotraSuggestions.includes(gotra)) {
+        const updatedSuggestions = [...gotraSuggestions, gotra];
+        setGotraSuggestions(updatedSuggestions);
+        localStorage.setItem(
+          "samaj-gotra-suggestions",
+          JSON.stringify(updatedSuggestions),
+        );
+      }
+    }
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: null }));
     }
@@ -634,6 +675,7 @@ export default function PaperForm({
                     <input
                       type="text"
                       className="field-input"
+                      list="gotra-suggestions"
                       value={formData.headVillage}
                       onChange={(e) =>
                         handleInputChange("headVillage", e.target.value)
@@ -720,6 +762,7 @@ export default function PaperForm({
                     <input
                       type="text"
                       className="field-input"
+                      list="gotra-suggestions"
                       value={formData.fatherGotra || ""}
                       onChange={(e) =>
                         handleInputChange("fatherGotra", e.target.value)
@@ -750,6 +793,7 @@ export default function PaperForm({
                     <input
                       type="text"
                       className="field-input"
+                      list="gotra-suggestions"
                       value={formData.motherGotra || ""}
                       onChange={(e) =>
                         handleInputChange("motherGotra", e.target.value)
@@ -887,6 +931,7 @@ export default function PaperForm({
                   <input
                     type="text"
                     className="field-input"
+                    list="gotra-suggestions"
                     value={formData.wifeVillage}
                     onChange={(e) =>
                       handleInputChange("wifeVillage", e.target.value)
@@ -941,6 +986,7 @@ export default function PaperForm({
                   <input
                     type="text"
                     className="field-input"
+                    list="gotra-suggestions"
                     value={formData.fatherInLawVillage}
                     onChange={(e) =>
                       handleInputChange("fatherInLawVillage", e.target.value)
@@ -973,6 +1019,7 @@ export default function PaperForm({
                   <input
                     type="text"
                     className="field-input"
+                    list="gotra-suggestions"
                     value={formData.motherInLawVillage}
                     onChange={(e) =>
                       handleInputChange("motherInLawVillage", e.target.value)
@@ -1011,6 +1058,33 @@ export default function PaperForm({
                 />
               </div>
             </div>
+
+            <div className="permanent-address-details">
+              {[
+                ["बेरा", "permanentBera"],
+                ["गाँव", "permanentVillage"],
+                ["तह", "permanentTehsil"],
+                ["जिला", "permanentDistrict"],
+              ].map(([label, field]) => (
+                <div className="field-group" key={field}>
+                  <span className="field-label">{label} -</span>
+                  <div className="field-input-wrapper">
+                    <input
+                      type="text"
+                      className="field-input"
+                      value={formData[field]}
+                      onChange={(e) => handleInputChange(field, e.target.value)}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <datalist id="gotra-suggestions">
+              {gotraSuggestions.map((gotra) => (
+                <option value={gotra} key={gotra} />
+              ))}
+            </datalist>
 
             {/* Row 10: Occupation 1 & 2 */}
             <div className="occupation-wrapper">

@@ -31,13 +31,17 @@ const exportToCsv = async (req, res) => {
       "अन्य विवरण (Other Details)",
       "फोटो (Photo URL)",
       "हस्ताक्षर (Signature URL)",
+      "स्थाई निवास बेरा",
+      "स्थाई निवास गाँव",
+      "स्थाई निवास तह",
+      "स्थाई निवास जिला",
       "पारिवारिक सदस्य संख्या (Family Members Count)",
       "पारिवारिक सदस्य विवरण (Family Members List)",
     ];
 
     const escapeCsv = (str) => {
       if (str === null || str === undefined) return '""';
-      const cleanStr = String(str).replace(/"/g, '""').replace(/\r?\n/g, ' ');
+      const cleanStr = String(str).replace(/"/g, '""').replace(/\r?\n/g, " ");
       return `"${cleanStr}"`;
     };
 
@@ -46,7 +50,7 @@ const exportToCsv = async (req, res) => {
         .filter((m) => m.name && m.name.trim() !== "")
         .map(
           (m) =>
-            `${m.name} (${m.relation || "सदस्य"}, आयु: ${m.age || "—"}, शिक्षा: ${m.education || "—"}, व्यवसाय: ${m.occupation || "—"}, मोबाइल: ${m.mobile || "—"})`
+            `${m.name} (${m.relation || "सदस्य"}, आयु: ${m.age || "—"}, शिक्षा: ${m.education || "—"}, व्यवसाय: ${m.occupation || "—"}, मोबाइल: ${m.mobile || "—"})`,
         )
         .join(" | ");
 
@@ -77,6 +81,10 @@ const exportToCsv = async (req, res) => {
         escapeCsv(r.otherDetails),
         escapeCsv(r.photoUrl),
         escapeCsv(r.signatureUrl),
+        escapeCsv(r.permanentBera),
+        escapeCsv(r.permanentVillage),
+        escapeCsv(r.permanentTehsil),
+        escapeCsv(r.permanentDistrict),
         escapeCsv((r.members || []).filter((m) => m.name).length),
         escapeCsv(membersText),
       ].join(",");
@@ -86,7 +94,7 @@ const exportToCsv = async (req, res) => {
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader(
       "Content-Disposition",
-      'attachment; filename="samaj_parichay_all_records_A_to_Z.csv"'
+      'attachment; filename="samaj_parichay_all_records_A_to_Z.csv"',
     );
     res.send(csvContent);
   } catch (err) {

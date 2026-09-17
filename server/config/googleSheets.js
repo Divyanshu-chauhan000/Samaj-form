@@ -93,6 +93,10 @@ const ensureSheetsHeaders = async (sheets, spreadsheetId) => {
       "Other Details",
       "Created At",
       "Latest Updated",
+      "स्थाई निवास बेरा",
+      "स्थाई निवास गाँव",
+      "स्थाई निवास तह",
+      "स्थाई निवास जिला",
     ];
 
     const memberHeaders = [

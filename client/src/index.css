@@ -200,6 +200,12 @@ body {
   line-height: 1.2;
 }
 
+.permanent-address-details {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .field-label {
   font-weight: 700;
   color: #2c2c2c;

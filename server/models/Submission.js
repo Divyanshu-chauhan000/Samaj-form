@@ -35,6 +35,10 @@ const SubmissionSchema = new mongoose.Schema(
     motherInLawVillage: { type: String, default: "" },
     currentAddress: { type: String, default: "" },
     permanentAddress: { type: String, default: "" },
+    permanentBera: { type: String, default: "" },
+    permanentVillage: { type: String, default: "" },
+    permanentTehsil: { type: String, default: "" },
+    permanentDistrict: { type: String, default: "" },
     occupation1: { type: String, default: "" },
     occupation2: { type: String, default: "" },
     photoUrl: { type: String, default: "" },
@@ -43,7 +47,7 @@ const SubmissionSchema = new mongoose.Schema(
     members: [FamilyMemberSchema],
     submissionDate: { type: String, default: "" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Submission", SubmissionSchema);
