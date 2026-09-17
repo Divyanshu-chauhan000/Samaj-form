@@ -27,7 +27,13 @@ const INITIAL_MEMBERS = Array.from({ length: 7 }, (_, i) => ({
 
 const DISTRICT_OPTIONS = ["ब्यावर", "पाली", "जोधपुर", "नागौर", "सिरोही"];
 const TEHSIL_OPTIONS = ["ब्यावर", "सोजत", "जैतारण", "बिलाड़ा", "रायपुर"];
-const VILLAGE_OPTIONS = ["निम्बाज", "कुशालपुरा", "देवली कला", "मोहरा कला", "रायपुर"];
+const VILLAGE_OPTIONS = [
+  "निम्बाज",
+  "कुशालपुरा",
+  "देवली कला",
+  "मोहरा कला",
+  "रायपुर",
+];
 
 export default function PaperForm({
   initialData = null,

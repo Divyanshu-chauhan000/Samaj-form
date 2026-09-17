@@ -2,24 +2,38 @@ const mongoose = require("mongoose");
 const Submission = require("../models/Submission");
 
 const syncRegistrationCounter = async () => {
-  const records = await Submission.find({}, { registrationId: 1, _id: 0 }).lean();
+  const records = await Submission.find(
+    {},
+    { registrationId: 1, _id: 0 },
+  ).lean();
   const maxSerial = records.reduce(
     (max, record) =>
-      Math.max(max, Number(String(record.registrationId || "").split("-").pop()) || 0),
+      Math.max(
+        max,
+        Number(
+          String(record.registrationId || "")
+            .split("-")
+            .pop(),
+        ) || 0,
+      ),
     0,
   );
-  await mongoose.connection.db.collection("counters").updateOne(
-    { _id: "registration" },
-    { $set: { seq: maxSerial } },
-    { upsert: true },
-  );
+  await mongoose.connection.db
+    .collection("counters")
+    .updateOne(
+      { _id: "registration" },
+      { $set: { seq: maxSerial } },
+      { upsert: true },
+    );
   console.log(`[MongoDB Counter]: Synced to ${maxSerial}`);
 };
 
 const connectDB = async () => {
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
-    console.warn("[MongoDB Warning]: MONGODB_URI not found in .env! Operating on local database.");
+    console.warn(
+      "[MongoDB Warning]: MONGODB_URI not found in .env! Operating on local database.",
+    );
     return false;
   }
 

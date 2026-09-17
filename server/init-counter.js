@@ -11,7 +11,7 @@ async function run() {
     await counters.updateOne(
       { _id: "registration" },
       { $setOnInsert: { seq: 0 } },
-      { upsert: true }
+      { upsert: true },
     );
     console.log("Counter initialized successfully.");
   } catch (err) {

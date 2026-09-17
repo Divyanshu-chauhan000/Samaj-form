@@ -39,9 +39,13 @@ const generateRegistrationId = async () => {
     throw new Error("MongoDB is not connected");
   }
 
-  const records = await Submission.find({}, { registrationId: 1, _id: 0 }).lean();
+  const records = await Submission.find(
+    {},
+    { registrationId: 1, _id: 0 },
+  ).lean();
   const maxNumber = records.reduce(
-    (max, record) => Math.max(max, getRegistrationNumber(record.registrationId)),
+    (max, record) =>
+      Math.max(max, getRegistrationNumber(record.registrationId)),
     0,
   );
   const counters = mongoose.connection.db.collection("counters");
@@ -69,7 +73,8 @@ const submitForm = async (req, res) => {
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({
         success: false,
-        message: "Database अभी उपलब्ध नहीं है। कृपया थोड़ी देर बाद फिर प्रयास करें।",
+        message:
+          "Database अभी उपलब्ध नहीं है। कृपया थोड़ी देर बाद फिर प्रयास करें।",
       });
     }
 

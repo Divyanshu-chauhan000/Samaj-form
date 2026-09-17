@@ -1,14 +1,20 @@
 const normalizeDigits = (value) => String(value || "").replace(/\D/g, "");
 
 const calculateRecordSearchScore = (record, searchTerm) => {
-  const term = String(searchTerm || "").trim().toUpperCase();
+  const term = String(searchTerm || "")
+    .trim()
+    .toUpperCase();
   if (!term) return 0;
 
-  const registrationId = String(record.registrationId || "").trim().toUpperCase();
+  const registrationId = String(record.registrationId || "")
+    .trim()
+    .toUpperCase();
   const numericSearch = normalizeDigits(term);
   const numericRegId = normalizeDigits(registrationId);
   const headMobile = normalizeDigits(record.mobileNumber);
-  const headName = String(record.headName || "").trim().toUpperCase();
+  const headName = String(record.headName || "")
+    .trim()
+    .toUpperCase();
 
   let score = 0;
 
@@ -28,9 +34,17 @@ const calculateRecordSearchScore = (record, searchTerm) => {
     const search10 = numericSearch.slice(-10);
     const head10 = headMobile.slice(-10);
 
-    if (headMobile && (headMobile === numericSearch || (search10.length === 10 && head10 === search10))) {
+    if (
+      headMobile &&
+      (headMobile === numericSearch ||
+        (search10.length === 10 && head10 === search10))
+    ) {
       score = Math.max(score, 1000);
-    } else if (headMobile && (headMobile.includes(numericSearch) || (search10.length >= 6 && headMobile.includes(search10)))) {
+    } else if (
+      headMobile &&
+      (headMobile.includes(numericSearch) ||
+        (search10.length >= 6 && headMobile.includes(search10)))
+    ) {
       score = Math.max(score, 800);
     }
 
@@ -38,7 +52,11 @@ const calculateRecordSearchScore = (record, searchTerm) => {
       for (const m of record.members) {
         const memberMobile = normalizeDigits(m.mobile);
         const member10 = memberMobile.slice(-10);
-        if (memberMobile && (memberMobile === numericSearch || (search10.length === 10 && member10 === search10))) {
+        if (
+          memberMobile &&
+          (memberMobile === numericSearch ||
+            (search10.length === 10 && member10 === search10))
+        ) {
           score = Math.max(score, 750);
           break;
         } else if (memberMobile && memberMobile.includes(numericSearch)) {
@@ -65,7 +83,10 @@ const calculateRecordSearchScore = (record, searchTerm) => {
   if (record.signatureUrl && record.signatureUrl.trim() !== "") {
     score += 50;
   }
-  if (Array.isArray(record.members) && record.members.some((m) => m.name && m.name.trim() !== "")) {
+  if (
+    Array.isArray(record.members) &&
+    record.members.some((m) => m.name && m.name.trim() !== "")
+  ) {
     score += 20;
   }
 
