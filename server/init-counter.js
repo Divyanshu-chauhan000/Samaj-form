@@ -10,7 +10,7 @@ async function run() {
     const counters = db.collection("counters");
     await counters.updateOne(
       { _id: "registration" },
-      { $setOnInsert: { seq: 10 } },
+      { $setOnInsert: { seq: 0 } },
       { upsert: true }
     );
     console.log("Counter initialized successfully.");

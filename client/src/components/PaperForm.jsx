@@ -25,6 +25,10 @@ const INITIAL_MEMBERS = Array.from({ length: 7 }, (_, i) => ({
   mobile: "",
 }));
 
+const DISTRICT_OPTIONS = ["ब्यावर", "पाली", "जोधपुर", "नागौर", "सिरोही"];
+const TEHSIL_OPTIONS = ["ब्यावर", "सोजत", "जैतारण", "बिलाड़ा", "रायपुर"];
+const VILLAGE_OPTIONS = ["निम्बाज", "कुशालपुरा", "देवली कला", "मोहरा कला", "रायपुर"];
+
 export default function PaperForm({
   initialData = null,
   onSaved = null,
@@ -470,28 +474,15 @@ export default function PaperForm({
             आपका पंजीयन क्रमांक (Registration ID):{" "}
             <strong>{successInfo.registrationId}</strong>
           </p>
-          {successInfo.googleSheetSaved ? (
-            <p
-              style={{
-                color: "#388e3c",
-                fontSize: "0.85rem",
-                marginTop: "4px",
-              }}
-            >
-              ✓ डेटा Google Sheets में सफलतापूर्वक अपडेट हो गया है।
-            </p>
-          ) : (
-            <p
-              style={{
-                color: "#f57c00",
-                fontSize: "0.85rem",
-                marginTop: "4px",
-              }}
-            >
-              ℹ डेटा लोकल डेटाबेस में सुरक्षित है (गूगल शीट सिंक बैकग्राउंड में
-              चालू है)।
-            </p>
-          )}
+          <p
+            style={{
+              color: "#388e3c",
+              fontSize: "0.85rem",
+              marginTop: "4px",
+            }}
+          >
+            ✓ DATA सफलतापूर्वक SAVE हो गया है।
+          </p>
 
           <div
             style={{
@@ -1021,6 +1012,13 @@ export default function PaperForm({
                     <input
                       type="text"
                       className="field-input"
+                      list={
+                        field === "permanentVillage"
+                          ? "village-options"
+                          : field === "permanentTehsil"
+                            ? "tehsil-options"
+                            : "district-options"
+                      }
                       value={formData[field]}
                       onChange={(e) => handleInputChange(field, e.target.value)}
                     />
@@ -1028,6 +1026,22 @@ export default function PaperForm({
                 </div>
               ))}
             </div>
+
+            <datalist id="village-options">
+              {VILLAGE_OPTIONS.map((village) => (
+                <option value={village} key={village} />
+              ))}
+            </datalist>
+            <datalist id="tehsil-options">
+              {TEHSIL_OPTIONS.map((tehsil) => (
+                <option value={tehsil} key={tehsil} />
+              ))}
+            </datalist>
+            <datalist id="district-options">
+              {DISTRICT_OPTIONS.map((district) => (
+                <option value={district} key={district} />
+              ))}
+            </datalist>
 
             <datalist id="gotra-suggestions">
               {gotraSuggestions.map((gotra) => (
