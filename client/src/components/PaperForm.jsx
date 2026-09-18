@@ -37,10 +37,10 @@ const VILLAGE_OPTIONS = [
 ];
 
 const COMMON_GOTRAS = [
-  "अजमेरा", "देवड़ा", "चौहान", "सोलंकी", "भाटी", "राठौड़", "गहलोत", 
-  "परमार", "टांक", "बड़गुर्जर", "गोयल", "सांखला", "कच्छवा", "पँवार", 
-  "तंवर", "सिसोदिया", "मण्डोवरा", "सिरोहीवाल", "वालिया", "कुमावत", 
-  "मारवाल", "खोरवाल", "जलवाल", "आत्रेय", "कश्यप", "भारद्वाज", "शांडिल्य", "व्यास"
+  "बाकरेचा", "नागौरा", "दुबलदिया", "चांदोरा", "टांक", "पीलोदिया", 
+  "कारीवाल", "रेणवाल", "मोटावत", "तिलायचा", "एकलिया", "नोदीवाल", 
+  "गुगांण", "अडाणिया", "गोठवाल", "भोमावत", "अलोदिया", "खारोल", 
+  "मांवर", "सांगर", "मांनणिया", "गुड़िया", "रामीणा"
 ];
 
 export default function PaperForm({
@@ -506,8 +506,42 @@ export default function PaperForm({
     window.print();
   };
 
+  // Global Enter Key Navigation
+  const handleGlobalKeyDown = (e) => {
+    if (e.key === "Enter") {
+      // Allow Enter on search input to trigger search
+      if (e.target.tagName === "INPUT" && e.target.placeholder && e.target.placeholder.includes("Registration ID")) {
+        return;
+      }
+      // Do not intercept if it's a textarea or button
+      if (e.target.tagName === "TEXTAREA" || e.target.tagName === "BUTTON") {
+        return;
+      }
+      // Do not intercept if it is a react-select input (let it select option)
+      if (e.target.getAttribute("role") === "combobox") {
+        return;
+      }
+      
+      e.preventDefault();
+      
+      const focusableElements = Array.from(
+        document.querySelectorAll(
+          'input:not([disabled]):not([type="hidden"]):not([style*="display: none"]), textarea:not([disabled]), button[type="submit"], select:not([disabled]), [role="combobox"]'
+        )
+      );
+      
+      const currentIndex = focusableElements.indexOf(e.target);
+      if (currentIndex > -1 && currentIndex < focusableElements.length - 1) {
+        let nextElement = focusableElements[currentIndex + 1];
+        if (nextElement) {
+          nextElement.focus();
+        }
+      }
+    }
+  };
+
   return (
-    <div className="form-page-container">
+    <div className="form-page-container" onKeyDown={handleGlobalKeyDown}>
       {/* Top Banner Status after Submit */}
       {successInfo && (
         <div
