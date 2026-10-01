@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import AdminRecords from "./components/AdminRecords";
 import DirectoryView from "./components/DirectoryView";
 import DirectoryCard from "./components/DirectoryCard";
+import PustikaView from "./components/PustikaView";
 import { BookOpen, ArrowLeft, Download } from "lucide-react";
 import { API_BASE_URL } from "./config.js";
 
@@ -18,6 +19,11 @@ export default function App() {
   const handleViewAllDirectoryCards = (records) => {
     setAllRecords(records);
     setView("all-cards");
+  };
+
+  const handleViewPustika = (records) => {
+    setAllRecords(records);
+    setView("pustika");
   };
 
   return (
@@ -90,6 +96,7 @@ export default function App() {
             }}
             onViewDirectoryCard={handleViewDirectoryCard}
             onViewAllDirectoryCards={handleViewAllDirectoryCards}
+            onViewPustika={handleViewPustika}
           />
         )}
 
@@ -120,6 +127,21 @@ export default function App() {
               </button>
             </div>
             <DirectoryView records={allRecords} />
+          </div>
+        )}
+
+        {view === "pustika" && (
+          <div>
+            <div style={{ marginBottom: "16px" }} className="no-print">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setView("records")}
+                style={{ color: "#333" }}
+              >
+                <ArrowLeft size={16} /> रिकॉर्ड्स पर वापस जाएँ
+              </button>
+            </div>
+            <PustikaView records={allRecords} />
           </div>
         )}
       </main>

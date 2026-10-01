@@ -43,11 +43,14 @@ const formatDate = (value) => {
 export default function AdminRecords({
   onViewDirectoryCard,
   onViewAllDirectoryCards,
+  onViewPustika,
 }) {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState("numeric"); // "numeric" | "alphabetical"
   const [selectedRecordDetails, setSelectedRecordDetails] = useState(null);
+  const [selectedRecordIds, setSelectedRecordIds] = useState(new Set());
 
   const fetchRecords = async () => {
     setLoading(true);
@@ -92,7 +95,7 @@ export default function AdminRecords({
     }
   };
 
-  const filteredRecords = records.filter((r) => {
+  let filteredRecords = records.filter((r) => {
     const term = searchTerm.toLowerCase().trim();
     if (!term) return true;
     const memberMatch =
@@ -110,6 +113,46 @@ export default function AdminRecords({
       memberMatch
     );
   });
+
+  // Apply sorting
+  filteredRecords.sort((a, b) => {
+    if (sortOrder === "alphabetical") {
+      const nameA = a.headName ? a.headName.toLowerCase() : "";
+      const nameB = b.headName ? b.headName.toLowerCase() : "";
+      return nameA.localeCompare(nameB, 'hi'); // 'hi' for Hindi locale support
+    } else {
+      // numeric (Registration ID / Date)
+      const numA = parseInt(a.registrationId.replace(/\D/g, "")) || 0;
+      const numB = parseInt(b.registrationId.replace(/\D/g, "")) || 0;
+      return numA - numB;
+    }
+  });
+
+  const toggleSelection = (id) => {
+    const newSelection = new Set(selectedRecordIds);
+    if (newSelection.has(id)) {
+      newSelection.delete(id);
+    } else {
+      newSelection.add(id);
+    }
+    setSelectedRecordIds(newSelection);
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const allIds = filteredRecords.map((r) => r.registrationId);
+      setSelectedRecordIds(new Set([...selectedRecordIds, ...allIds]));
+    } else {
+      const newSelection = new Set(selectedRecordIds);
+      filteredRecords.forEach((r) => newSelection.delete(r.registrationId));
+      setSelectedRecordIds(newSelection);
+    }
+  };
+
+  const selectedCount = selectedRecordIds.size;
+  const isAllFilteredSelected =
+    filteredRecords.length > 0 &&
+    filteredRecords.every((r) => selectedRecordIds.has(r.registrationId));
 
   return (
     <div className="admin-container no-print">
@@ -149,19 +192,25 @@ export default function AdminRecords({
               color: "#FFF",
               fontWeight: "600",
             }}
-            onClick={() =>
-              onViewAllDirectoryCards &&
-              onViewAllDirectoryCards(filteredRecords)
-            }
+            onClick={() => {
+              if (selectedCount === 0) {
+                alert("कृपया पहले कम से कम एक फॉर्म चुनें।");
+                return;
+              }
+              const selectedRecordsList = records.filter((r) =>
+                selectedRecordIds.has(r.registrationId)
+              );
+              onViewPustika && onViewPustika(selectedRecordsList);
+            }}
           >
-            <FileText size={16} /> डायरेक्टरी कार्ड्स देखें
+            <FileText size={16} /> परिचय पुस्तिका प्रिंट ({selectedCount})
           </button>
         </div>
       </div>
 
-      {/* Search Input */}
-      <div className="search-bar-row">
-        <div style={{ position: "relative", flex: 1 }}>
+      {/* Search and Sort Row */}
+      <div className="search-bar-row" style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ position: "relative", flex: 1, minWidth: "250px" }}>
           <Search
             size={18}
             style={{
@@ -174,11 +223,24 @@ export default function AdminRecords({
           <input
             type="text"
             className="search-input"
-            style={{ paddingLeft: "38px" }}
+            style={{ paddingLeft: "38px", width: "100%" }}
             placeholder="मुखिया का नाम, मोबाइल नंबर, गौत्र या Registration ID से खोजें..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+        </div>
+        
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <label style={{ fontWeight: "bold", color: "#7B1113" }}>सॉर्ट (Sort):</label>
+          <select 
+            className="search-input"
+            style={{ padding: "8px 12px", minWidth: "150px" }}
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value="numeric">क्रमानुसार (Serial No.)</option>
+            <option value="alphabetical">A-Z (वर्णमाला अनुसार)</option>
+          </select>
         </div>
       </div>
 
@@ -202,6 +264,14 @@ export default function AdminRecords({
         <table className="records-table">
           <thead>
             <tr>
+              <th style={{ width: "40px", textAlign: "center" }}>
+                <input
+                  type="checkbox"
+                  checked={isAllFilteredSelected}
+                  onChange={handleSelectAll}
+                  style={{ transform: "scale(1.2)", cursor: "pointer" }}
+                />
+              </th>
               <th>पंजीयन ID</th>
               <th>मुखिया का नाम</th>
               <th>गौत्र</th>
@@ -215,6 +285,14 @@ export default function AdminRecords({
           <tbody>
             {filteredRecords.map((rec) => (
               <tr key={rec.registrationId}>
+                <td style={{ textAlign: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRecordIds.has(rec.registrationId)}
+                    onChange={() => toggleSelection(rec.registrationId)}
+                    style={{ transform: "scale(1.2)", cursor: "pointer" }}
+                  />
+                </td>
                 <td>
                   <strong>{rec.registrationId}</strong>
                 </td>
