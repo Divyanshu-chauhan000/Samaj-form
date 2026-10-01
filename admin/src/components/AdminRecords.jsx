@@ -332,20 +332,20 @@ export default function AdminRecords({
                       <Eye size={15} /> A-Z विवरण
                     </button>
 
-                    {/* Format 2: Directory Card View/Print */}
                     <button
                       className="btn btn-secondary"
                       style={{
                         padding: "4px 8px",
-                        color: "#8B0000",
+                        color: "#fff",
+                        backgroundColor: "#8B0000",
                         borderColor: "#8B0000",
                       }}
-                      onClick={() =>
-                        onViewDirectoryCard && onViewDirectoryCard(rec)
-                      }
-                      title="डायरेक्टरी कार्ड एवं PDF"
+                      onClick={() => {
+                        onViewPustika && onViewPustika([rec]);
+                      }}
+                      title="इस फॉर्म को डाउनलोड/प्रिंट करें"
                     >
-                      <FileText size={15} /> डायरेक्टरी कार्ड
+                      <FileText size={15} /> डाउनलोड
                     </button>
 
                     {/* Delete */}

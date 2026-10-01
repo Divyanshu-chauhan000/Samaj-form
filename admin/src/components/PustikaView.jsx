@@ -1,5 +1,7 @@
-import React from "react";
-import { Printer } from "lucide-react";
+import React, { useState } from "react";
+import { Printer, Download, Loader } from "lucide-react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function PustikaView({ records = [] }) {
   // Dynamically chunk records so they don't exceed A4 height.
@@ -31,6 +33,73 @@ export default function PustikaView({ records = [] }) {
   }
   
   if (chunkPages.length === 0) chunkPages.push([]);
+
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const [downloadingPageIdx, setDownloadingPageIdx] = useState(-1);
+
+  const handleDownloadAll = async () => {
+    setIsDownloadingAll(true);
+    try {
+      const pages = document.querySelectorAll('.pustika-page');
+      if (pages.length === 0) return;
+      
+      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
+      pdf.setProperties({
+        title: 'Kumawat Samaj Forms',
+        subject: 'User Forms',
+        author: 'Admin Portal',
+        creator: 'Admin System'
+      });
+      
+      for (let i = 0; i < pages.length; i++) {
+        const canvas = await html2canvas(pages[i], { scale: 2, useCORS: true, logging: false });
+        const imgData = canvas.toDataURL('image/jpeg', 0.9);
+        
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      }
+      pdf.save('Kumawat_Samaj_Forms.pdf');
+    } catch (err) {
+      console.error(err);
+      alert("PDF डाउनलोड करने में त्रुटि आई।");
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
+
+  const handleDownloadSinglePage = async (pageIdx) => {
+    setDownloadingPageIdx(pageIdx);
+    try {
+      const pages = document.querySelectorAll('.pustika-page');
+      const pageEl = pages[pageIdx];
+      if (!pageEl) return;
+      
+      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
+      pdf.setProperties({
+        title: 'Kumawat Samaj Page',
+        subject: 'User Form',
+        author: 'Admin Portal',
+        creator: 'Admin System'
+      });
+      
+      const canvas = await html2canvas(pageEl, { scale: 2, useCORS: true, logging: false });
+      const imgData = canvas.toDataURL('image/jpeg', 0.9);
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      pdf.save(`Kumawat_Samaj_Page_${pageIdx + 1}.pdf`);
+    } catch (err) {
+      console.error(err);
+      alert("पेज डाउनलोड करने में त्रुटि आई।");
+    } finally {
+      setDownloadingPageIdx(-1);
+    }
+  };
 
   return (
     <div className="pustika-wrapper">
@@ -260,10 +329,11 @@ export default function PustikaView({ records = [] }) {
         </h2>
         <button
           className="btn btn-primary"
-          style={{ backgroundColor: "#8B0000", borderColor: "#8B0000", color: "white", padding: "8px 16px", borderRadius: "5px" }}
-          onClick={() => window.print()}
+          style={{ backgroundColor: "#8B0000", borderColor: "#8B0000", color: "white", padding: "8px 16px", borderRadius: "5px", opacity: isDownloadingAll ? 0.7 : 1 }}
+          onClick={handleDownloadAll}
+          disabled={isDownloadingAll}
         >
-          <Printer size={18} /> पुस्तिका प्रिंट करें
+          {isDownloadingAll ? <><Loader size={18} className="spin-icon" /> PDF बन रहा है...</> : <><Download size={18} /> सभी डाउनलोड करें</>}
         </button>
       </div>
 
@@ -272,19 +342,11 @@ export default function PustikaView({ records = [] }) {
           <div className="no-print" style={{ marginBottom: "10px", textAlign: "right", width: "210mm" }}>
             <button 
               className="btn btn-secondary" 
-              style={{ fontSize: "0.8rem", padding: "6px 12px", backgroundColor: "#333", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-              onClick={() => {
-                // simple hack to print specific page: hide others
-                const allPages = document.querySelectorAll('.pustika-page');
-                allPages.forEach((el, i) => {
-                  if(i !== pageIdx) el.style.display = 'none';
-                });
-                window.print();
-                // restore
-                allPages.forEach(el => el.style.display = 'flex');
-              }}
+              style={{ fontSize: "0.8rem", padding: "6px 12px", backgroundColor: "#333", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", opacity: downloadingPageIdx === pageIdx ? 0.7 : 1 }}
+              onClick={() => handleDownloadSinglePage(pageIdx)}
+              disabled={downloadingPageIdx !== -1}
             >
-              <Printer size={14} /> केवल यह पेज प्रिंट करें (Page {pageIdx + 1})
+              {downloadingPageIdx === pageIdx ? "डाउनलोड हो रहा है..." : <><Download size={14} /> केवल यह पेज डाउनलोड करें</>}
             </button>
           </div>
           <div className="pustika-page">
