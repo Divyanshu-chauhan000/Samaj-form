@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { Printer, Download, Loader } from "lucide-react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 export default function PustikaView({ records = [] }) {
   // Dynamically chunk records so they don't exceed A4 height.
@@ -37,68 +35,18 @@ export default function PustikaView({ records = [] }) {
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [downloadingPageIdx, setDownloadingPageIdx] = useState(-1);
 
-  const handleDownloadAll = async () => {
-    setIsDownloadingAll(true);
-    try {
-      const pages = document.querySelectorAll('.pustika-page');
-      if (pages.length === 0) return;
-      
-      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
-      pdf.setProperties({
-        title: 'Kumawat Samaj Forms',
-        subject: 'User Forms',
-        author: 'Admin Portal',
-        creator: 'Admin System'
-      });
-      
-      for (let i = 0; i < pages.length; i++) {
-        const canvas = await html2canvas(pages[i], { scale: 2, useCORS: true, logging: false });
-        const imgData = canvas.toDataURL('image/jpeg', 0.9);
-        
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-      }
-      pdf.save('Kumawat_Samaj_Forms.pdf');
-    } catch (err) {
-      console.error(err);
-      alert("PDF डाउनलोड करने में त्रुटि आई।");
-    } finally {
-      setIsDownloadingAll(false);
-    }
+  const handleDownloadAll = () => {
+    window.print();
   };
 
-  const handleDownloadSinglePage = async (pageIdx) => {
+  const handleDownloadSinglePage = (pageIdx) => {
     setDownloadingPageIdx(pageIdx);
-    try {
-      const pages = document.querySelectorAll('.pustika-page');
-      const pageEl = pages[pageIdx];
-      if (!pageEl) return;
-      
-      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
-      pdf.setProperties({
-        title: 'Kumawat Samaj Page',
-        subject: 'User Form',
-        author: 'Admin Portal',
-        creator: 'Admin System'
-      });
-      
-      const canvas = await html2canvas(pageEl, { scale: 2, useCORS: true, logging: false });
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-      pdf.save(`Kumawat_Samaj_Page_${pageIdx + 1}.pdf`);
-    } catch (err) {
-      console.error(err);
-      alert("पेज डाउनलोड करने में त्रुटि आई।");
-    } finally {
-      setDownloadingPageIdx(-1);
-    }
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        setDownloadingPageIdx(-1);
+      }, 500);
+    }, 100);
   };
 
   return (
@@ -299,6 +247,9 @@ export default function PustikaView({ records = [] }) {
           .no-print {
             display: none !important;
           }
+          .hide-for-print {
+            display: none !important;
+          }
           .pustika-page {
             box-shadow: none;
             margin: 0;
@@ -329,11 +280,10 @@ export default function PustikaView({ records = [] }) {
         </h2>
         <button
           className="btn btn-primary"
-          style={{ backgroundColor: "#8B0000", borderColor: "#8B0000", color: "white", padding: "8px 16px", borderRadius: "5px", opacity: isDownloadingAll ? 0.7 : 1 }}
+          style={{ backgroundColor: "#8B0000", borderColor: "#8B0000", color: "white", padding: "8px 16px", borderRadius: "5px" }}
           onClick={handleDownloadAll}
-          disabled={isDownloadingAll}
         >
-          {isDownloadingAll ? <><Loader size={18} className="spin-icon" /> PDF बन रहा है...</> : <><Download size={18} /> सभी डाउनलोड करें</>}
+          <Printer size={18} /> सभी प्रिंट / PDF सेव करें
         </button>
       </div>
 
@@ -346,10 +296,10 @@ export default function PustikaView({ records = [] }) {
               onClick={() => handleDownloadSinglePage(pageIdx)}
               disabled={downloadingPageIdx !== -1}
             >
-              {downloadingPageIdx === pageIdx ? "डाउनलोड हो रहा है..." : <><Download size={14} /> केवल यह पेज डाउनलोड करें</>}
+              {downloadingPageIdx === pageIdx ? "तैयार हो रहा है..." : <><Printer size={14} /> केवल यह पेज प्रिंट/PDF</>}
             </button>
           </div>
-          <div className="pustika-page">
+          <div className={`pustika-page ${downloadingPageIdx !== -1 && downloadingPageIdx !== pageIdx ? 'hide-for-print' : ''}`}>
             <div className="pustika-page-inner">
               {pageRecords.map((rec, rIdx) => (
               <div key={rIdx} className="pustika-card">

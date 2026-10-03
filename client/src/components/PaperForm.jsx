@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Upload,
   Plus,
@@ -94,8 +94,18 @@ export default function PaperForm({
 
   const [formData, setFormData] = useState(() => getInitialState(initialData));
 
-  const handleSearchAndLoadRecord = async () => {
-    if (!searchRegId.trim()) {
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+      setSearchRegId(editId);
+      handleSearchAndLoadRecord(editId);
+    }
+  }, []);
+
+  const handleSearchAndLoadRecord = async (idToSearch = null) => {
+    const targetId = typeof idToSearch === "string" ? idToSearch : searchRegId;
+    if (!targetId.trim()) {
       alert(
         "कृपया Registration ID या मोबाइल नंबर दर्ज करें। (उदा: KSP-2026-00010, 10 या 9876543210)",
       );
@@ -104,7 +114,7 @@ export default function PaperForm({
     setSearching(true);
     try {
       const res = await fetch(
-        `${API_BASE_URL}/api/records/${encodeURIComponent(searchRegId.trim())}`,
+        `${API_BASE_URL}/api/records/${encodeURIComponent(targetId.trim())}`,
       );
       const data = await res.json();
       if (data.success && data.record) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, Eye, Trash2, RefreshCw, FileText, X } from "lucide-react";
+import { Search, Eye, Trash2, RefreshCw, FileText, X, Edit } from "lucide-react";
 import { API_BASE_URL } from "../config.js";
 
 const formatDate = (value) => {
@@ -346,6 +346,22 @@ export default function AdminRecords({
                       title="इस फॉर्म को डाउनलोड/प्रिंट करें"
                     >
                       <FileText size={15} /> डाउनलोड
+                    </button>
+
+                    {/* Edit Form */}
+                    <button
+                      className="btn btn-secondary"
+                      style={{
+                        padding: "4px 8px",
+                        color: "#1976d2",
+                        borderColor: "#1976d2",
+                      }}
+                      onClick={() => {
+                        window.open(`http://localhost:3000/?edit=${rec.registrationId}`, "_blank");
+                      }}
+                      title="फॉर्म एडिट करें"
+                    >
+                      <Edit size={15} /> एडिट
                     </button>
 
                     {/* Delete */}
