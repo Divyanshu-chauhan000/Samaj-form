@@ -5,3 +5,5 @@ uploads/*
 frontend/node_modules
 frontend/dist
 .DS_Store
+**/dist
+**/package-lock.json
