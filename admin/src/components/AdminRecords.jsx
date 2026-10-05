@@ -197,7 +197,7 @@ export default function AdminRecords({
                 alert("कृपया पहले कम से कम एक फॉर्म चुनें।");
                 return;
               }
-              const selectedRecordsList = records.filter((r) =>
+              const selectedRecordsList = filteredRecords.filter((r) =>
                 selectedRecordIds.has(r.registrationId)
               );
               onViewPustika && onViewPustika(selectedRecordsList);
