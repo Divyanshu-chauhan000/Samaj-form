@@ -2,32 +2,9 @@ import React, { useState } from "react";
 import { Printer, Download, Loader } from "lucide-react";
 
 export default function PustikaView({ records = [] }) {
-  // Dynamically chunk records so they don't exceed A4 height.
-  // An A4 page can fit roughly 42 "units" of height.
-  // A card's header is ~6 units. Each member row is 1 unit.
-  const MAX_PAGE_UNITS = 42;
   const chunkPages = [];
-  let currentPage = [];
-  let currentUnits = 0;
-
-  records.forEach(rec => {
-    const memberCount = rec.members ? rec.members.filter(m => m.name).length : 0;
-    // ensure at least 1 unit if 0 members
-    const rowUnits = Math.max(memberCount, 1);
-    const cardUnits = 6 + rowUnits + 1; // +1 for table header
-
-    if (currentUnits + cardUnits > MAX_PAGE_UNITS && currentPage.length > 0) {
-      chunkPages.push(currentPage);
-      currentPage = [];
-      currentUnits = 0;
-    }
-    
-    currentPage.push(rec);
-    currentUnits += cardUnits;
-  });
-
-  if (currentPage.length > 0) {
-    chunkPages.push(currentPage);
+  for (let i = 0; i < records.length; i += 4) {
+    chunkPages.push(records.slice(i, i + 4));
   }
   
   if (chunkPages.length === 0) chunkPages.push([]);
@@ -63,7 +40,6 @@ export default function PustikaView({ records = [] }) {
 
         .pustika-page {
           width: 210mm;
-          max-height: 297mm;
           box-shadow: 0 0 10px rgba(0,0,0,0.2);
           position: relative;
           padding: 0;
@@ -72,7 +48,6 @@ export default function PustikaView({ records = [] }) {
           page-break-after: always;
           display: flex;
           flex-direction: column;
-          overflow: hidden;
         }
 
         .pustika-page-inner {
