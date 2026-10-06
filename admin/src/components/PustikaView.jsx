@@ -358,7 +358,15 @@ export default function PustikaView({ records = [] }) {
                 <div className="pustika-address-box">
                   <div className="addr-section">
                     <div className="addr-title">मूल निवास</div>
-                    <div className="addr-content">{rec.permanentAddress || "—"}</div>
+                    <div className="addr-content">
+                      {[
+                        rec.permanentAddress,
+                        rec.permanentBera ? `बेरा-${rec.permanentBera}` : "",
+                        rec.permanentVillage ? `गाँव-${rec.permanentVillage}` : "",
+                        rec.permanentTehsil ? `तह. -${rec.permanentTehsil}` : "",
+                        rec.permanentDistrict ? `जिला-${rec.permanentDistrict}` : ""
+                      ].filter(Boolean).join(", ") || "—"}
+                    </div>
                   </div>
                   <div className="addr-section">
                     <div className="addr-title">वर्तमान निवास</div>

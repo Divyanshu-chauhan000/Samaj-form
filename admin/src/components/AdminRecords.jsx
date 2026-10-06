@@ -117,13 +117,33 @@ export default function AdminRecords({
   // Apply sorting
   filteredRecords.sort((a, b) => {
     if (sortOrder === "alphabetical") {
-      const nameA = a.headName ? a.headName.toLowerCase() : "";
-      const nameB = b.headName ? b.headName.toLowerCase() : "";
-      return nameA.localeCompare(nameB, 'hi'); // 'hi' for Hindi locale support
+      const nameA = a.headName ? String(a.headName).trim() : "";
+      const nameB = b.headName ? String(b.headName).trim() : "";
+      
+      if (!nameA && !nameB) return 0;
+      if (!nameA) return 1; // Push empty names to the end
+      if (!nameB) return -1;
+
+      return nameA.localeCompare(nameB, 'hi', { sensitivity: 'base' });
     } else {
       // numeric (Registration ID / Date)
-      const numA = parseInt(a.registrationId.replace(/\D/g, "")) || 0;
-      const numB = parseInt(b.registrationId.replace(/\D/g, "")) || 0;
+      const getSeq = (id) => {
+        if (!id) return 0;
+        const parts = String(id).split('-');
+        const lastPart = parts[parts.length - 1];
+        return parseInt(lastPart.replace(/\D/g, "")) || 0;
+      };
+      
+      const numA = getSeq(a.registrationId);
+      const numB = getSeq(b.registrationId);
+      
+      // If sequence numbers are identical (or 0), fallback to Date
+      if (numA === numB) {
+        const dateA = new Date(a.createdAt || a.submissionDate || 0);
+        const dateB = new Date(b.createdAt || b.submissionDate || 0);
+        return dateA - dateB;
+      }
+      
       return numA - numB;
     }
   });
@@ -699,7 +719,13 @@ export default function AdminRecords({
                 </div>
                 <div style={{ fontSize: "0.9rem" }}>
                   <strong>स्थाई निवास स्थान:</strong>{" "}
-                  {selectedRecordDetails.permanentAddress || "—"}
+                  {[
+                    selectedRecordDetails.permanentAddress,
+                    selectedRecordDetails.permanentBera ? `बेरा-${selectedRecordDetails.permanentBera}` : "",
+                    selectedRecordDetails.permanentVillage ? `गाँव-${selectedRecordDetails.permanentVillage}` : "",
+                    selectedRecordDetails.permanentTehsil ? `तह. -${selectedRecordDetails.permanentTehsil}` : "",
+                    selectedRecordDetails.permanentDistrict ? `जिला-${selectedRecordDetails.permanentDistrict}` : ""
+                  ].filter(Boolean).join(", ") || "—"}
                 </div>
               </div>
 
